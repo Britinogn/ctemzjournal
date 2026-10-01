@@ -1,0 +1,25 @@
+dddd# Secrets
+.env
+.env.*
+!.env.sample
+
+# Go build output
+/bin/
+/tmp/
+*.exe
+*.test
+*.out
+coverage.out
+
+# Dependencies (remove this line if you vendor)
+/vendor/
+
+# Supabase CLI local state
+supabase/.temp/
+supabase/.branches/
+
+# Editors and OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
