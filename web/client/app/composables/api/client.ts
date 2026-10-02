@@ -3,12 +3,13 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { ApiData } from '~/types'
 
 type Method = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE'
+type ApiBody = Record<string, unknown> | Array<unknown> | string | number | boolean | null
 
 interface ApiClient {
   get: <T>(path: string) => Promise<T>;
-  post: <T>(path: string, body?: unknown) => Promise<T>;
-  patch: <T>(path: string, body?: unknown) => Promise<T>;
-  put: <T>(path: string, body?: unknown) => Promise<T>;
+  post: <T>(path: string, body?: ApiBody) => Promise<T>;
+  patch: <T>(path: string, body?: ApiBody) => Promise<T>;
+  put: <T>(path: string, body?: ApiBody) => Promise<T>;
   del: <T>(path: string) => Promise<T>;
 }
 
@@ -20,14 +21,14 @@ interface ApiClient {
 export function useApi(): ApiClient {
   const baseURL = useRuntimeConfig().public.apiUrl as string
 
-  async function request<T>(method: Method, path: string, body?: unknown): Promise<T> {
+  async function request<T>(method: Method, path: string, body?: ApiBody): Promise<T> {
     const { $supabase } = useNuxtApp() as unknown as { $supabase: SupabaseClient }
     const { data: { session } } = await $supabase.auth.getSession()
     try {
       const res = await $fetch<ApiData<T>>(path, {
         baseURL,
         method,
-        body,
+        body: body as Record<string, unknown> | undefined,
         headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
       })
       return res.data
@@ -51,9 +52,9 @@ export function useApi(): ApiClient {
 
   return {
     get: <T>(path: string) => request<T>('GET', path),
-    post: <T>(path: string, body?: unknown) => request<T>('POST', path, body),
-    patch: <T>(path: string, body?: unknown) => request<T>('PATCH', path, body),
-    put: <T>(path: string, body?: unknown) => request<T>('PUT', path, body),
+    post: <T>(path: string, body?: ApiBody) => request<T>('POST', path, body),
+    patch: <T>(path: string, body?: ApiBody) => request<T>('PATCH', path, body),
+    put: <T>(path: string, body?: ApiBody) => request<T>('PUT', path, body),
     del: <T>(path: string) => request<T>('DELETE', path),
   }
 }

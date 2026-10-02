@@ -3,7 +3,13 @@ import { onClickOutside } from '@vueuse/core'
 import { Logout02Icon, Settings01Icon } from '~/utils/icons'
 import type { Profile } from '~/types'
 
-defineProps<{ profile: Profile | null }>()
+withDefaults(defineProps<{
+  profile: Profile | null;
+  /** Sidebar opens upward, top bars drop downward. */
+  placement?: 'up' | 'down';
+}>(), {
+  placement: 'down',
+})
 
 const { logout } = useAuth()
 const open = ref(false)
@@ -35,16 +41,22 @@ async function onLogout(): Promise<void> {
       aria-haspopup="menu"
       :aria-expanded="open"
       aria-label="Account menu"
-      class="flex w-full items-center gap-3 rounded-2xl border border-border bg-surface p-3 text-left transition hover:border-primary"
+      class="rounded-full outline-none transition focus-visible:ring-2 focus-visible:ring-primary"
       @click="open = !open"
       @keydown.escape="open = false"
     >
-      <LayoutUserlayoutUserAvatar
-        :name="profile?.DisplayName"
-        :email="undefined"
-        :size="40"
-      />
-      <div class="hidden min-w-0 flex-1 leading-tight xl:block">
+      <LayoutUserlayoutUserAvatar :name="profile?.DisplayName" :size="36" />
+    </button>
+
+    <div
+      v-if="open"
+      role="menu"
+      :class="[
+        'absolute right-0 z-50 w-56 overflow-hidden rounded-2xl border border-border bg-surface shadow-xl',
+        placement === 'up' ? 'bottom-full mb-2' : 'top-full mt-2',
+      ]"
+    >
+      <div class="border-b border-border px-4 py-3">
         <p class="truncate text-sm font-semibold">
           {{ profile?.DisplayName || 'Trader' }}
         </p>
@@ -52,13 +64,6 @@ async function onLogout(): Promise<void> {
           {{ profile?.Role || 'user' }}
         </p>
       </div>
-    </button>
-
-    <div
-      v-if="open"
-      role="menu"
-      class="absolute inset-x-0 bottom-full z-50 mb-2 overflow-hidden rounded-2xl border border-border bg-surface shadow-xl"
-    >
       <div class="p-1.5">
         <NuxtLink
           to="/dashboard/settings"

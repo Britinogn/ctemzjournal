@@ -7,6 +7,9 @@ const props = withDefaults(defineProps<{
   role?: string;
   size?: number;
 }>(), {
+  name: null,
+  email: '',
+  role: 'user',
   size: 40,
 });
 

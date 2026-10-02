@@ -7,6 +7,10 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css'],
 
+  imports: {
+    dirs: ['composables/**'],
+  },
+
   vite: {
     plugins: [
       tailwindcss(),
@@ -14,6 +18,11 @@ export default defineNuxtConfig({
   },
 
   modules: ['@nuxtjs/color-mode', '@nuxt/fonts', '@nuxt/eslint', 'vue-sonner/nuxt'],
+
+  // No public home build yet: / lands on the (guarded) dashboard.
+  routeRules: {
+    '/': { redirect: '/dashboard' },
+  },
 
   // Plain `.dark` class (no suffix) — the design tokens switch on it.
   // Follows the OS, remembers the choice, no flash on load.

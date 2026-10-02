@@ -15,13 +15,19 @@ defineProps<{ profile: Profile | null }>()
 const route = useRoute()
 
 const nav = [
-  { label: 'Dashboard', to: '/dashboard', icon: DashboardSquare02Icon },
-  { label: 'Trades', to: '/trades', icon: TradeUpIcon },
-  { label: 'Accounts', to: '/accounts', icon: Wallet01Icon },
-  { label: 'Setups', to: '/setups', icon: Target01Icon },
-  { label: 'Tags', to: '/tags', icon: Tag01Icon },
-  { label: 'Settings', to: '/settings', icon: Settings01Icon },
+  { label: 'Dashboard', to: '/dashboard', icon: DashboardSquare02Icon, exact: true },
+  { label: 'Trades', to: '/dashboard/trades', icon: TradeUpIcon, exact: false },
+  { label: 'Accounts', to: '/dashboard/accounts', icon: Wallet01Icon, exact: false },
+  { label: 'Setups', to: '/dashboard/setups', icon: Target01Icon, exact: false },
+  { label: 'Tags', to: '/dashboard/tags', icon: Tag01Icon, exact: false },
+  { label: 'Settings', to: '/dashboard/settings', icon: Settings01Icon, exact: false },
 ]
+
+function isActive(item: { to: string; exact: boolean }): boolean {
+  if (item.exact)
+    return route.path === item.to
+  return route.path === item.to || route.path.startsWith(`${item.to}/`)
+}
 
 const isAdminRoute = computed(() => route.path.startsWith('/admin'))
 </script>
@@ -35,7 +41,7 @@ const isAdminRoute = computed(() => route.path.startsWith('/admin'))
       </NuxtLink>
     </div>
 
-    <!-- Trader / Admin view toggle -->
+    <!-- Role badge: static "Trader" for traders, Trader/Admin switcher for admins -->
     <div class="px-3 xl:px-4">
       <div class="grid grid-cols-1 gap-1 rounded-2xl border border-border bg-bg p-1 xl:grid-cols-2">
         <NuxtLink
@@ -65,10 +71,10 @@ const isAdminRoute = computed(() => route.path.startsWith('/admin'))
         v-for="item in nav"
         :key="item.to"
         :to="item.to"
-        :aria-current="route.path === item.to || route.path.startsWith(item.to + '/') ? 'page' : undefined"
+        :aria-current="isActive(item) ? 'page' : undefined"
         :class="[
           'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition',
-          route.path === item.to || route.path.startsWith(item.to + '/')
+          isActive(item)
             ? 'bg-primary/10 text-primary'
             : 'text-muted hover:bg-bg hover:text-text',
         ]"
@@ -80,7 +86,7 @@ const isAdminRoute = computed(() => route.path.startsWith('/admin'))
 
     <div class="space-y-3 p-3 xl:p-4">
       <NuxtLink
-        to="/trades/new"
+        to="/dashboard/trades/new"
         class="flex items-center justify-center gap-2 rounded-xl bg-primary py-2.5 text-sm font-semibold text-on-primary transition hover:opacity-90"
       >
         <UiAppIcon :icon="Add01Icon" :size="18" />

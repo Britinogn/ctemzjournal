@@ -10,15 +10,17 @@ import {
 const route = useRoute()
 
 const tabs = [
-  { label: 'Home', to: '/dashboard', icon: Home01Icon },
-  { label: 'Trades', to: '/trades', icon: TradeUpIcon },
-  { label: 'Log', to: '/trades/new', icon: Add01Icon, fab: true },
-  { label: 'Accounts', to: '/accounts', icon: Wallet01Icon },
-  { label: 'More', to: '/settings', icon: Menu01Icon },
+  { label: 'Home', to: '/dashboard', icon: Home01Icon, exact: true },
+  { label: 'Trades', to: '/dashboard/trades', icon: TradeUpIcon, exact: false },
+  { label: 'Log', to: '/dashboard/trades/new', icon: Add01Icon, fab: true, exact: true },
+  { label: 'Accounts', to: '/dashboard/accounts', icon: Wallet01Icon, exact: false },
+  { label: 'More', to: '/dashboard/settings', icon: Menu01Icon, exact: false },
 ]
 
-function active(to: string): boolean {
-  return route.path === to || (to !== '/dashboard' && route.path.startsWith(`${to}/`))
+function active(tab: { to: string; exact: boolean }): boolean {
+  if (tab.exact)
+    return route.path === tab.to
+  return route.path === tab.to || route.path.startsWith(`${tab.to}/`)
 }
 </script>
 
@@ -32,7 +34,7 @@ function active(to: string): boolean {
         :to="tab.to"
         :class="[
           'flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium transition',
-          active(tab.to) ? 'text-primary' : 'text-muted',
+          active(tab) ? 'text-primary' : 'text-muted',
         ]"
       >
         <span

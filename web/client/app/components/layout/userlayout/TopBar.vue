@@ -11,7 +11,7 @@ defineProps<{ profile: Profile | null }>()
       <NuxtLink to="/dashboard" class="flex items-center">
         <BrandLogo :size="28" />
       </NuxtLink>
-      <LayoutUserlayoutUserAvatar :name="profile?.DisplayName" :size="34" />
+      <LayoutUserlayoutUserMenu :profile="profile" placement="down" />
     </div>
   </header>
 </template>

@@ -6,6 +6,7 @@ withDefaults(defineProps<{
   tone?: 'neutral' | 'profit' | 'loss' | 'warning';
   icon: unknown;
 }>(), {
+  sub: undefined,
   tone: 'neutral',
 })
 
