@@ -17,10 +17,11 @@ type Stats struct {
 	stats    *repository.Stats
 	profiles *repository.Profiles
 	setups   *repository.Setups
+	trades   *repository.Trades
 }
 
-func NewStats(stats *repository.Stats, profiles *repository.Profiles, setups *repository.Setups) *Stats {
-	return &Stats{stats: stats, profiles: profiles, setups: setups}
+func NewStats(stats *repository.Stats, profiles *repository.Profiles, setups *repository.Setups, trades *repository.Trades) *Stats {
+	return &Stats{stats: stats, profiles: profiles, setups: setups, trades: trades}
 }
 
 // locationOf resolves the user's display timezone (default Africa/Lagos),
@@ -73,11 +74,29 @@ func (s *Stats) Summary(ctx context.Context, userID uuid.UUID, accountID *uuid.U
 		return model.StatsSummary{}, err
 	}
 	sum := calc.Summarize(trades)
-	return model.StatsSummary{
+	out := model.StatsSummary{
 		Total: sum.Total, Wins: sum.Wins, Losses: sum.Losses,
 		WinRate: sum.WinRate, AvgR: sum.AvgR, Expectancy: sum.Expectancy,
 		TotalPnl: sum.TotalPnl, MaxDrawdown: sum.MaxDrawdown, RuleRate: sum.RuleRate,
-	}, nil
+	}
+	// Headline totals (all trades taken, currently open). Whole-user by
+	// default; account-scoped when ?account= is set.
+	if accountID == nil {
+		if total, err := s.trades.CountByUser(ctx, userID); err == nil {
+			out.TotalTrades = total
+		}
+		if open, err := s.trades.CountOpenByUser(ctx, userID); err == nil {
+			out.OpenTrades = open
+		}
+	} else {
+		if open, err := s.trades.CountOpenByAccount(ctx, userID, *accountID); err == nil {
+			out.OpenTrades = open
+			out.TotalTrades = int64(sum.Total) + open
+		} else {
+			out.TotalTrades = int64(sum.Total)
+		}
+	}
+	return out, nil
 }
 
 func (s *Stats) EquityCurve(ctx context.Context, userID uuid.UUID, accountID *uuid.UUID) ([]model.EquityPoint, error) {

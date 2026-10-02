@@ -82,7 +82,9 @@ func New(d Deps) chi.Router {
 		repository.NewStats(d.Queries),
 		profiles,
 		repository.NewSetups(d.Queries),
+		tradesRepo,
 	))
+	adminHandler := handler.NewAdmin(service.NewAdmin(profiles, tradesRepo))
 
 	MountDashboard(r, DashboardDeps{
 		Me:       meHandler,
@@ -94,6 +96,7 @@ func New(d Deps) chi.Router {
 		Stats:    statsHandler,
 		Auth:     d.Auth,
 	}, authHandler)
+	MountAdmin(r, adminHandler, d.Auth)
 
 	return r
 }

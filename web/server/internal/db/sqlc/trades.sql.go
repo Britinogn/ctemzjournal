@@ -23,6 +23,33 @@ func (q *Queries) CountAllTrades(ctx context.Context) (int64, error) {
 	return count, err
 }
 
+const countOpenTrades = `-- name: CountOpenTrades :one
+select count(*) from trades where user_id = $1 and status = 'open'
+`
+
+func (q *Queries) CountOpenTrades(ctx context.Context, userID uuid.UUID) (int64, error) {
+	row := q.db.QueryRow(ctx, countOpenTrades, userID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countOpenTradesByAccount = `-- name: CountOpenTradesByAccount :one
+select count(*) from trades where user_id = $1 and account_id = $2 and status = 'open'
+`
+
+type CountOpenTradesByAccountParams struct {
+	UserID    uuid.UUID
+	AccountID uuid.UUID
+}
+
+func (q *Queries) CountOpenTradesByAccount(ctx context.Context, arg CountOpenTradesByAccountParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countOpenTradesByAccount, arg.UserID, arg.AccountID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const countTrades = `-- name: CountTrades :one
 select count(*) from trades where user_id = $1
 `

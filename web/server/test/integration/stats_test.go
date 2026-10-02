@@ -44,6 +44,7 @@ func newStatsEnv(t *testing.T) (*statsEnv, context.Context) {
 		repository.NewStats(database.Queries),
 		repository.NewProfiles(database.Queries),
 		repository.NewSetups(database.Queries),
+		repository.NewTrades(database.Queries),
 	)
 	return &statsEnv{stats: statsSvc, trades: tradesSvc, user: user, account: account.ID}, ctx
 }
@@ -81,6 +82,9 @@ func TestStatsSummary(t *testing.T) {
 	}
 	if s.Total != 5 || s.Wins != 3 || s.Losses != 2 {
 		t.Fatalf("counts: %+v", s)
+	}
+	if s.TotalTrades != 5 || s.OpenTrades != 0 {
+		t.Fatalf("headline totals: %+v", s)
 	}
 	if !closeEnough(s.WinRate, 0.6) || !closeEnough(s.AvgR, 0.8336) ||
 		!closeEnough(s.Expectancy, 15185.6) || !closeEnough(s.MaxDrawdown, 1312) ||

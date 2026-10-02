@@ -30,6 +30,12 @@ limit sqlc.arg(page_limit) offset sqlc.arg(page_offset);
 -- name: CountTrades :one
 select count(*) from trades where user_id = $1;
 
+-- name: CountOpenTrades :one
+select count(*) from trades where user_id = $1 and status = 'open';
+
+-- name: CountOpenTradesByAccount :one
+select count(*) from trades where user_id = $1 and account_id = $2 and status = 'open';
+
 -- name: CountAllTrades :one
 select count(*) from trades;
 

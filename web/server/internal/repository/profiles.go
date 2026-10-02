@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	sqlc "github.com/britinogn/ctemzjournal/internal/db/sqlc"
 	"github.com/google/uuid"
@@ -38,4 +39,14 @@ func (p *Profiles) Update(ctx context.Context, id uuid.UUID, displayName, timezo
 // SetStatus suspends or reactivates a user (admin only).
 func (p *Profiles) SetStatus(ctx context.Context, id uuid.UUID, status string) (sqlc.Profile, error) {
 	return p.q.UpdateProfileStatus(ctx, sqlc.UpdateProfileStatusParams{ID: id, Status: status})
+}
+
+// Count returns the total user count (admin overview).
+func (p *Profiles) Count(ctx context.Context) (int64, error) {
+	return p.q.CountUsers(ctx)
+}
+
+// CountNewSince returns users created at or after since (admin overview).
+func (p *Profiles) CountNewSince(ctx context.Context, since time.Time) (int64, error) {
+	return p.q.CountNewUsersSince(ctx, pgtype.Timestamptz{Time: since, Valid: true})
 }

@@ -193,6 +193,26 @@ func (t *Trades) ExportAll(ctx context.Context, userID uuid.UUID) ([]sqlc.Trade,
 	return t.q.ExportTradesByUser(ctx, userID)
 }
 
+// CountByUser returns all trades taken by a user (dashboard total).
+func (t *Trades) CountByUser(ctx context.Context, userID uuid.UUID) (int64, error) {
+	return t.q.CountTrades(ctx, userID)
+}
+
+// CountOpenByUser returns the user's currently open trades.
+func (t *Trades) CountOpenByUser(ctx context.Context, userID uuid.UUID) (int64, error) {
+	return t.q.CountOpenTrades(ctx, userID)
+}
+
+// CountOpenByAccount returns open trades for one account.
+func (t *Trades) CountOpenByAccount(ctx context.Context, userID, accountID uuid.UUID) (int64, error) {
+	return t.q.CountOpenTradesByAccount(ctx, sqlc.CountOpenTradesByAccountParams{UserID: userID, AccountID: accountID})
+}
+
+// CountAll returns every trade in the system (admin overview).
+func (t *Trades) CountAll(ctx context.Context) (int64, error) {
+	return t.q.CountAllTrades(ctx)
+}
+
 // --- small converters (textArg/numericArg live in accounts.go, same package) ---
 
 // numPtr formats a float with precision (prices 6dp, money 2dp, lots 4dp).

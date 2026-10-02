@@ -3,7 +3,7 @@ package model
 // Stats DTOs for the /stats/* endpoints (snake_case for the frontend).
 
 type StatsSummary struct {
-	Total       int     `json:"total"`
+	Total       int     `json:"total"` // closed trades
 	Wins        int     `json:"wins"`
 	Losses      int     `json:"losses"`
 	WinRate     float64 `json:"win_rate"`
@@ -12,6 +12,8 @@ type StatsSummary struct {
 	TotalPnl    float64 `json:"total_pnl"`
 	MaxDrawdown float64 `json:"max_drawdown"`
 	RuleRate    float64 `json:"rule_rate"`
+	OpenTrades  int64   `json:"open_trades"`
+	TotalTrades int64   `json:"total_trades"` // open + closed
 }
 
 type EquityPoint struct {
