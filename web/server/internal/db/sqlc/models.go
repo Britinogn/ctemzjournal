@@ -39,6 +39,7 @@ type Profile struct {
 	AvatarPath  pgtype.Text
 	CreatedAt   pgtype.Timestamptz
 	UpdatedAt   pgtype.Timestamptz
+	Email       pgtype.Text
 }
 
 type Setup struct {

@@ -40,10 +40,21 @@ select id, display_name, role, status, timezone, avatar_path, created_at, update
 from profiles where id = $1
 `
 
+type GetProfileByIDRow struct {
+	ID          uuid.UUID
+	DisplayName pgtype.Text
+	Role        string
+	Status      string
+	Timezone    string
+	AvatarPath  pgtype.Text
+	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
+}
+
 // profiles (id = supabase auth uid)
-func (q *Queries) GetProfileByID(ctx context.Context, id uuid.UUID) (Profile, error) {
+func (q *Queries) GetProfileByID(ctx context.Context, id uuid.UUID) (GetProfileByIDRow, error) {
 	row := q.db.QueryRow(ctx, getProfileByID, id)
-	var i Profile
+	var i GetProfileByIDRow
 	err := row.Scan(
 		&i.ID,
 		&i.DisplayName,
@@ -71,15 +82,26 @@ type ListUsersParams struct {
 	Offset  int32
 }
 
-func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]Profile, error) {
+type ListUsersRow struct {
+	ID          uuid.UUID
+	DisplayName pgtype.Text
+	Role        string
+	Status      string
+	Timezone    string
+	AvatarPath  pgtype.Text
+	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
+}
+
+func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]ListUsersRow, error) {
 	rows, err := q.db.Query(ctx, listUsers, arg.Column1, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Profile
+	var items []ListUsersRow
 	for rows.Next() {
-		var i Profile
+		var i ListUsersRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.DisplayName,
@@ -116,14 +138,25 @@ type UpdateProfileParams struct {
 	AvatarPath  pgtype.Text
 }
 
-func (q *Queries) UpdateProfile(ctx context.Context, arg UpdateProfileParams) (Profile, error) {
+type UpdateProfileRow struct {
+	ID          uuid.UUID
+	DisplayName pgtype.Text
+	Role        string
+	Status      string
+	Timezone    string
+	AvatarPath  pgtype.Text
+	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
+}
+
+func (q *Queries) UpdateProfile(ctx context.Context, arg UpdateProfileParams) (UpdateProfileRow, error) {
 	row := q.db.QueryRow(ctx, updateProfile,
 		arg.ID,
 		arg.DisplayName,
 		arg.Timezone,
 		arg.AvatarPath,
 	)
-	var i Profile
+	var i UpdateProfileRow
 	err := row.Scan(
 		&i.ID,
 		&i.DisplayName,
@@ -147,9 +180,20 @@ type UpdateProfileStatusParams struct {
 	Status string
 }
 
-func (q *Queries) UpdateProfileStatus(ctx context.Context, arg UpdateProfileStatusParams) (Profile, error) {
+type UpdateProfileStatusRow struct {
+	ID          uuid.UUID
+	DisplayName pgtype.Text
+	Role        string
+	Status      string
+	Timezone    string
+	AvatarPath  pgtype.Text
+	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
+}
+
+func (q *Queries) UpdateProfileStatus(ctx context.Context, arg UpdateProfileStatusParams) (UpdateProfileStatusRow, error) {
 	row := q.db.QueryRow(ctx, updateProfileStatus, arg.ID, arg.Status)
-	var i Profile
+	var i UpdateProfileStatusRow
 	err := row.Scan(
 		&i.ID,
 		&i.DisplayName,

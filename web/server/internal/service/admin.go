@@ -33,25 +33,57 @@ func NewAdmin(
 	return &Admin{profiles: profiles, trades: trades, settings: settings, audit: audit, queries: queries}
 }
 
-// Overview returns user count, trade count and new users this week.
+// Overview returns the admin cards: totals, active/suspended split,
+// public/hidden journal counts, new users this week + previous week,
+// and per-day signups for the last 7 days.
 func (s *Admin) Overview(ctx context.Context) (model.AdminOverview, error) {
 	var out model.AdminOverview
 	var err error
+	now := time.Now().UTC()
 	if out.UserCount, err = s.profiles.Count(ctx); err != nil {
+		return model.AdminOverview{}, err
+	}
+	if out.ActiveUsers, err = s.profiles.CountByStatus(ctx, model.StatusActive); err != nil {
+		return model.AdminOverview{}, err
+	}
+	if out.SuspendedUsers, err = s.profiles.CountByStatus(ctx, model.StatusSuspended); err != nil {
 		return model.AdminOverview{}, err
 	}
 	if out.TradeCount, err = s.trades.CountAll(ctx); err != nil {
 		return model.AdminOverview{}, err
 	}
-	if out.NewUsersThisWeek, err = s.profiles.CountNewSince(ctx, time.Now().UTC().AddDate(0, 0, -7)); err != nil {
+	if out.PublicTrades, err = s.trades.CountPublic(ctx); err != nil {
 		return model.AdminOverview{}, err
+	}
+	if out.HiddenJournals, err = s.trades.CountHidden(ctx); err != nil {
+		return model.AdminOverview{}, err
+	}
+	if out.NewUsersThisWeek, err = s.profiles.CountNewSince(ctx, now.AddDate(0, 0, -7)); err != nil {
+		return model.AdminOverview{}, err
+	}
+	if out.NewUsersPrevWeek, err = s.profiles.CountNewSince(ctx, now.AddDate(0, 0, -14)); err != nil {
+		return model.AdminOverview{}, err
+	} else {
+		out.NewUsersPrevWeek -= out.NewUsersThisWeek
+	}
+	rows, err := s.profiles.SignupsSince(ctx, now.AddDate(0, 0, -7))
+	if err != nil {
+		return model.AdminOverview{}, err
+	}
+	out.SignupsLast7D = make([]model.SignupDay, 0, len(rows))
+	for _, r := range rows {
+		day := ""
+		if r.Day.Valid {
+			day = r.Day.Time.Format("2006-01-02")
+		}
+		out.SignupsLast7D = append(out.SignupsLast7D, model.SignupDay{Date: day, Count: r.Signups})
 	}
 	return out, nil
 }
 
-// ListUsers returns profiles with display-name search.
-func (s *Admin) ListUsers(ctx context.Context, search string, limit, offset int32) ([]sqlc.Profile, error) {
-	return s.profiles.ListUsers(ctx, search, limit, offset)
+// ListUsers returns profiles with email + trade counts and name-or-email search.
+func (s *Admin) ListUsers(ctx context.Context, search string, limit, offset int32) ([]sqlc.ListUsersAdminRow, error) {
+	return s.profiles.ListUsersAdmin(ctx, search, limit, offset)
 }
 
 // SetUserStatus suspends or reactivates a user and audits the write.

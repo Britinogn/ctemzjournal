@@ -62,6 +62,22 @@ func TestAdminOverview(t *testing.T) {
 	if overview.NewUsersThisWeek != 2 {
 		t.Fatalf("new users = %d, want 2", overview.NewUsersThisWeek)
 	}
+	if overview.ActiveUsers != 2 || overview.SuspendedUsers != 0 {
+		t.Fatalf("active/suspended = %d/%d, want 2/0", overview.ActiveUsers, overview.SuspendedUsers)
+	}
+	if overview.PublicTrades != 0 || overview.HiddenJournals != 0 {
+		t.Fatalf("public/hidden = %d/%d, want 0/0", overview.PublicTrades, overview.HiddenJournals)
+	}
+	if overview.NewUsersPrevWeek != 0 {
+		t.Fatalf("prev week = %d, want 0", overview.NewUsersPrevWeek)
+	}
+	var signed int64
+	for _, d := range overview.SignupsLast7D {
+		signed += d.Count
+	}
+	if signed != 2 {
+		t.Fatalf("signup chart total = %d, want 2", signed)
+	}
 }
 
 func newAdminEnv(t *testing.T) (*service.Admin, *service.Trades, uuid.UUID, uuid.UUID, uuid.UUID, context.Context) {
@@ -104,6 +120,9 @@ func TestAdminUserStatusAndAudit(t *testing.T) {
 	found, err := admin.ListUsers(ctx, "ali", 20, 0)
 	if err != nil || len(found) != 1 {
 		t.Fatalf("search: %+v (%v)", found, err)
+	}
+	if found[0].TradeCount != 0 {
+		t.Fatalf("alice trade_count = %d, want 0", found[0].TradeCount)
 	}
 
 	if _, err := admin.SetUserStatus(ctx, adminID, adminID, "suspended"); err == nil {

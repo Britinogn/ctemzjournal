@@ -219,6 +219,16 @@ func (t *Trades) Hide(ctx context.Context, id uuid.UUID, hidden bool) (sqlc.Trad
 	return t.q.HideJournal(ctx, sqlc.HideJournalParams{ID: id, HiddenByAdmin: hidden})
 }
 
+// CountPublic returns visible public journals (admin overview).
+func (t *Trades) CountPublic(ctx context.Context) (int64, error) {
+	return t.q.CountPublicTrades(ctx)
+}
+
+// CountHidden returns admin-hidden journals (admin overview).
+func (t *Trades) CountHidden(ctx context.Context) (int64, error) {
+	return t.q.CountHiddenJournals(ctx)
+}
+
 // --- small converters (textArg/numericArg live in accounts.go, same package) ---
 
 // numPtr formats a float with precision (prices 6dp, money 2dp, lots 4dp).
