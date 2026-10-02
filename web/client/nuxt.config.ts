@@ -13,7 +13,7 @@ export default defineNuxtConfig({
     ],
   },
 
-  modules: ['@nuxtjs/color-mode', '@nuxt/fonts', '@nuxt/eslint'],
+  modules: ['@nuxtjs/color-mode', '@nuxt/fonts', '@nuxt/eslint', 'vue-sonner/nuxt'],
 
   // Plain `.dark` class (no suffix) — the design tokens switch on it.
   // Follows the OS, remembers the choice, no flash on load.

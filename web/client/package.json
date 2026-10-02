@@ -28,5 +28,8 @@
     "vue-chartjs": "^5.3.4",
     "vue-router": "^5.3.1",
     "vue-sonner": "^2.0.9"
+  },
+  "devDependencies": {
+    "vite-tsconfig-paths": "^6.1.1"
   }
 }
