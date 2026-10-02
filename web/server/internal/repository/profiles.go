@@ -50,3 +50,21 @@ func (p *Profiles) Count(ctx context.Context) (int64, error) {
 func (p *Profiles) CountNewSince(ctx context.Context, since time.Time) (int64, error) {
 	return p.q.CountNewUsersSince(ctx, pgtype.Timestamptz{Time: since, Valid: true})
 }
+
+// ListUsers returns profiles with display-name search (admin only).
+func (p *Profiles) ListUsers(ctx context.Context, search string, limit, offset int32) ([]sqlc.Profile, error) {
+	if limit < 1 || limit > 100 {
+		limit = 20
+	}
+	if offset < 0 {
+		offset = 0
+	}
+	users, err := p.q.ListUsers(ctx, sqlc.ListUsersParams{Column1: search, Limit: limit, Offset: offset})
+	if err != nil {
+		return nil, err
+	}
+	if users == nil {
+		users = []sqlc.Profile{}
+	}
+	return users, nil
+}

@@ -213,6 +213,12 @@ func (t *Trades) CountAll(ctx context.Context) (int64, error) {
 	return t.q.CountAllTrades(ctx)
 }
 
+// Hide marks a trade hidden (or restores it). Admin-only; the public
+// endpoint never returns hidden journals.
+func (t *Trades) Hide(ctx context.Context, id uuid.UUID, hidden bool) (sqlc.Trade, error) {
+	return t.q.HideJournal(ctx, sqlc.HideJournalParams{ID: id, HiddenByAdmin: hidden})
+}
+
 // --- small converters (textArg/numericArg live in accounts.go, same package) ---
 
 // numPtr formats a float with precision (prices 6dp, money 2dp, lots 4dp).
