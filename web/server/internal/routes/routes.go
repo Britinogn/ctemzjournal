@@ -1,7 +1,10 @@
 package routes
 
 import (
+	"log"
+
 	"github.com/britinogn/ctemzjournal/config"
+	infra "github.com/britinogn/ctemzjournal/internal/cloudinary"
 	sqlc "github.com/britinogn/ctemzjournal/internal/db/sqlc"
 	"github.com/britinogn/ctemzjournal/internal/handler"
 	"github.com/britinogn/ctemzjournal/internal/middleware"
@@ -45,6 +48,13 @@ func New(d Deps) chi.Router {
 	setupsHandler := handler.NewSetups(service.NewSetups(repository.NewSetups(d.Queries)))
 	tagsHandler := handler.NewTags(service.NewTags(repository.NewTags(d.Queries)))
 	tradesRepo := repository.NewTrades(d.Queries)
+	imagesRepo := repository.NewTradeImages(d.Queries)
+	cld, err := infra.New(d.Config.CloudinaryCloudName, d.Config.CloudinaryAPIKey, d.Config.CloudinaryAPISecret)
+	if err != nil {
+		log.Printf("cloudinary disabled: %v", err)
+		cld = &infra.Client{}
+	}
+	imagesSvc := service.NewImages(tradesRepo, imagesRepo, cld)
 	tradesHandler := handler.NewTrades(service.NewTrades(
 		tradesRepo,
 		repository.NewTradeTags(d.Queries),
@@ -52,7 +62,8 @@ func New(d Deps) chi.Router {
 		repository.NewSetups(d.Queries),
 		repository.NewTags(d.Queries),
 		d.Queries,
-	))
+	), imagesSvc)
+	imagesHandler := handler.NewImages(imagesSvc)
 
 	MountDashboard(r, DashboardDeps{
 		Me:       meHandler,
@@ -60,6 +71,7 @@ func New(d Deps) chi.Router {
 		Setups:   setupsHandler,
 		Tags:     tagsHandler,
 		Trades:   tradesHandler,
+		Images:   imagesHandler,
 		Auth:     d.Auth,
 	}, authHandler)
 

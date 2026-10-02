@@ -15,10 +15,13 @@ import (
 
 // Trades handles /trades CRUD, visibility toggle and filtered listing.
 type Trades struct {
-	svc *service.Trades
+	svc    *service.Trades
+	images *service.Images
 }
 
-func NewTrades(svc *service.Trades) *Trades { return &Trades{svc: svc} }
+func NewTrades(svc *service.Trades, images *service.Images) *Trades {
+	return &Trades{svc: svc, images: images}
+}
 
 type tradeCreateRequest struct {
 	AccountID     string   `json:"account_id"`
@@ -344,6 +347,12 @@ func (h *Trades) Delete(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, "invalid id")
 		return
+	}
+	// Destroy Cloudinary files first (best-effort inside), then the row.
+	// FK cascade removes image rows; doing files first avoids orphan files
+	// in Cloudinary. Retrying delete is safe if the row delete fails.
+	if h.images != nil {
+		_ = h.images.DeleteByTrade(r.Context(), uid, id)
 	}
 	if err := h.svc.Delete(r.Context(), id, uid); err != nil {
 		response.Error(w, http.StatusInternalServerError, "delete failed")
