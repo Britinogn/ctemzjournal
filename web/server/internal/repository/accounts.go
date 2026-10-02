@@ -4,9 +4,9 @@ import (
 	"context"
 	"strconv"
 
+	sqlc "github.com/britinogn/ctemzjournal/internal/db/sqlc"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
-	sqlc "github.com/britinogn/ctemzjournal/internal/db/sqlc"
 )
 
 // Accounts wraps the sqlc account queries. Every method is scoped by user_id.

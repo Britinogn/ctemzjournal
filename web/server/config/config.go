@@ -11,9 +11,9 @@ import (
 // Values come from the environment (.env.sample documents every key).
 // Removed Supabase vars stay removed: auth is verified via SUPABASE_JWKS_URL only.
 type Config struct {
-	AppEnv      string
-	Port        string
-	AppURL      string
+	AppEnv         string
+	Port           string
+	AppURL         string
 	FrontendOrigin string
 
 	DatabaseURL string
@@ -25,7 +25,7 @@ type Config struct {
 	CloudinaryAPIKey    string
 	CloudinaryAPISecret string
 
-	TwelveDataAPIKey   string
+	TwelveDataAPIKey    string
 	RatesRefreshMinutes int
 
 	BcryptRounds int

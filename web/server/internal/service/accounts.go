@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 
-	"github.com/google/uuid"
 	sqlc "github.com/britinogn/ctemzjournal/internal/db/sqlc"
 	"github.com/britinogn/ctemzjournal/internal/model"
 	"github.com/britinogn/ctemzjournal/internal/repository"
+	"github.com/google/uuid"
 )
 
 // Accounts owns account business rules (type/currency validation, user scoping).

@@ -3,9 +3,9 @@ package service
 import (
 	"context"
 
-	"github.com/google/uuid"
 	sqlc "github.com/britinogn/ctemzjournal/internal/db/sqlc"
 	"github.com/britinogn/ctemzjournal/internal/repository"
+	"github.com/google/uuid"
 )
 
 // Me serves GET /me and PATCH /me.

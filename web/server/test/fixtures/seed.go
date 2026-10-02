@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/google/uuid"
 	"github.com/britinogn/ctemzjournal/internal/db"
+	"github.com/google/uuid"
 )
 
 // MustUser creates a profiles row directly (bypasses auth.users trigger)

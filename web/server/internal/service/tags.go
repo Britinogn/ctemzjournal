@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 
-	"github.com/google/uuid"
 	sqlc "github.com/britinogn/ctemzjournal/internal/db/sqlc"
 	"github.com/britinogn/ctemzjournal/internal/model"
 	"github.com/britinogn/ctemzjournal/internal/repository"
+	"github.com/google/uuid"
 )
 
 // Tags owns tag rules (kind must be mistake or general).

@@ -16,16 +16,16 @@ select * from trades where id = $1 and user_id = $2;
 
 -- name: ListTrades :many
 select * from trades
-where user_id = $1
-  and ($2 = '' or pair = $2)
-  and ($3::uuid is null or setup_id = $3)
-  and ($4 = '' or status = $4)
-  and ($5::uuid is null or account_id = $5)
-  and ($6 = '' or direction = $6)
-  and ($7::timestamptz is null or opened_at >= $7)
-  and ($8::timestamptz is null or opened_at <= $8)
+where user_id = sqlc.arg(user_id)
+  and (sqlc.arg(pair)::text = '' or pair = sqlc.arg(pair)::text)
+  and (sqlc.narg(setup_id)::uuid is null or setup_id = sqlc.narg(setup_id)::uuid)
+  and (sqlc.arg(status)::text = '' or status = sqlc.arg(status)::text)
+  and (sqlc.narg(account_id)::uuid is null or account_id = sqlc.narg(account_id)::uuid)
+  and (sqlc.arg(direction)::text = '' or direction = sqlc.arg(direction)::text)
+  and (sqlc.narg(opened_from)::timestamptz is null or opened_at >= sqlc.narg(opened_from)::timestamptz)
+  and (sqlc.narg(opened_to)::timestamptz is null or opened_at <= sqlc.narg(opened_to)::timestamptz)
 order by opened_at desc nulls last, created_at desc
-limit $9 offset $10;
+limit sqlc.arg(page_limit) offset sqlc.arg(page_offset);
 
 -- name: CountTrades :one
 select count(*) from trades where user_id = $1;
@@ -61,6 +61,11 @@ returning *;
 
 -- name: UpdateTradeVisibility :one
 update trades set is_public = $3 where id = $1 and user_id = $2
+returning *;
+
+-- name: ReopenTrade :one
+update trades set status = 'open', exit_price = null, closed_at = null, pnl = null, r_multiple = null
+where id = $1 and user_id = $2
 returning *;
 
 -- name: HideJournal :one

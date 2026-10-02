@@ -5,11 +5,11 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/britinogn/ctemzjournal/internal/repository"
 	"github.com/britinogn/ctemzjournal/internal/service"
 	"github.com/britinogn/ctemzjournal/test/fixtures"
 	"github.com/britinogn/ctemzjournal/test/helpers"
+	"github.com/jackc/pgx/v5"
 )
 
 func TestSetupsCRUDAndIsolation(t *testing.T) {

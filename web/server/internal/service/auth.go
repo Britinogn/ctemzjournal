@@ -3,9 +3,9 @@ package service
 import (
 	"context"
 
-	"github.com/google/uuid"
 	sqlc "github.com/britinogn/ctemzjournal/internal/db/sqlc"
 	"github.com/britinogn/ctemzjournal/internal/repository"
+	"github.com/google/uuid"
 )
 
 // Auth bootstraps the profile row on first login.

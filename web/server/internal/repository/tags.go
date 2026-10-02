@@ -3,8 +3,8 @@ package repository
 import (
 	"context"
 
-	"github.com/google/uuid"
 	sqlc "github.com/britinogn/ctemzjournal/internal/db/sqlc"
+	"github.com/google/uuid"
 )
 
 // Tags wraps the sqlc tag queries. Every method is scoped by user_id.

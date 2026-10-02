@@ -1,9 +1,9 @@
 package routes
 
 import (
-	"github.com/go-chi/chi/v5"
 	"github.com/britinogn/ctemzjournal/internal/handler"
 	"github.com/britinogn/ctemzjournal/internal/middleware"
+	"github.com/go-chi/chi/v5"
 )
 
 // DashboardDeps carries the handlers mounted under the authenticated user group.
@@ -14,6 +14,7 @@ type DashboardDeps struct {
 	Accounts *handler.Accounts
 	Setups   *handler.Setups
 	Tags     *handler.Tags
+	Trades   *handler.Trades
 	Auth     *middleware.Auth
 }
 
@@ -24,4 +25,5 @@ func MountDashboard(r chi.Router, d DashboardDeps, authHandler *handler.Auth) {
 	MountAccounts(r, d.Accounts, d.Auth)
 	MountSetups(r, d.Setups, d.Auth)
 	MountTags(r, d.Tags, d.Auth)
+	MountTrades(r, d.Trades, d.Auth)
 }

@@ -388,42 +388,42 @@ func (q *Queries) ListPublicJournals(ctx context.Context, arg ListPublicJournals
 const listTrades = `-- name: ListTrades :many
 select id, user_id, account_id, setup_id, pair, direction, timeframe, opened_at, closed_at, entry, stop_loss, take_profit, exit_price, lot_size, commission, swap, risk_amount, pnl, r_multiple, followed_rules, emotion, notes, status, is_public, hidden_by_admin, created_at, updated_at from trades
 where user_id = $1
-  and ($2 = '' or pair = $2)
-  and ($3::uuid is null or setup_id = $3)
-  and ($4 = '' or status = $4)
-  and ($5::uuid is null or account_id = $5)
-  and ($6 = '' or direction = $6)
-  and ($7::timestamptz is null or opened_at >= $7)
-  and ($8::timestamptz is null or opened_at <= $8)
+  and ($2::text = '' or pair = $2::text)
+  and ($3::uuid is null or setup_id = $3::uuid)
+  and ($4::text = '' or status = $4::text)
+  and ($5::uuid is null or account_id = $5::uuid)
+  and ($6::text = '' or direction = $6::text)
+  and ($7::timestamptz is null or opened_at >= $7::timestamptz)
+  and ($8::timestamptz is null or opened_at <= $8::timestamptz)
 order by opened_at desc nulls last, created_at desc
-limit $9 offset $10
+limit $10 offset $9
 `
 
 type ListTradesParams struct {
-	UserID  uuid.UUID
-	Column2 interface{}
-	Column3 uuid.UUID
-	Column4 interface{}
-	Column5 uuid.UUID
-	Column6 interface{}
-	Column7 pgtype.Timestamptz
-	Column8 pgtype.Timestamptz
-	Limit   int32
-	Offset  int32
+	UserID     uuid.UUID
+	Pair       string
+	SetupID    pgtype.UUID
+	Status     string
+	AccountID  pgtype.UUID
+	Direction  string
+	OpenedFrom pgtype.Timestamptz
+	OpenedTo   pgtype.Timestamptz
+	PageOffset int32
+	PageLimit  int32
 }
 
 func (q *Queries) ListTrades(ctx context.Context, arg ListTradesParams) ([]Trade, error) {
 	rows, err := q.db.Query(ctx, listTrades,
 		arg.UserID,
-		arg.Column2,
-		arg.Column3,
-		arg.Column4,
-		arg.Column5,
-		arg.Column6,
-		arg.Column7,
-		arg.Column8,
-		arg.Limit,
-		arg.Offset,
+		arg.Pair,
+		arg.SetupID,
+		arg.Status,
+		arg.AccountID,
+		arg.Direction,
+		arg.OpenedFrom,
+		arg.OpenedTo,
+		arg.PageOffset,
+		arg.PageLimit,
 	)
 	if err != nil {
 		return nil, err
@@ -469,6 +469,52 @@ func (q *Queries) ListTrades(ctx context.Context, arg ListTradesParams) ([]Trade
 		return nil, err
 	}
 	return items, nil
+}
+
+const reopenTrade = `-- name: ReopenTrade :one
+update trades set status = 'open', exit_price = null, closed_at = null, pnl = null, r_multiple = null
+where id = $1 and user_id = $2
+returning id, user_id, account_id, setup_id, pair, direction, timeframe, opened_at, closed_at, entry, stop_loss, take_profit, exit_price, lot_size, commission, swap, risk_amount, pnl, r_multiple, followed_rules, emotion, notes, status, is_public, hidden_by_admin, created_at, updated_at
+`
+
+type ReopenTradeParams struct {
+	ID     uuid.UUID
+	UserID uuid.UUID
+}
+
+func (q *Queries) ReopenTrade(ctx context.Context, arg ReopenTradeParams) (Trade, error) {
+	row := q.db.QueryRow(ctx, reopenTrade, arg.ID, arg.UserID)
+	var i Trade
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.AccountID,
+		&i.SetupID,
+		&i.Pair,
+		&i.Direction,
+		&i.Timeframe,
+		&i.OpenedAt,
+		&i.ClosedAt,
+		&i.Entry,
+		&i.StopLoss,
+		&i.TakeProfit,
+		&i.ExitPrice,
+		&i.LotSize,
+		&i.Commission,
+		&i.Swap,
+		&i.RiskAmount,
+		&i.Pnl,
+		&i.RMultiple,
+		&i.FollowedRules,
+		&i.Emotion,
+		&i.Notes,
+		&i.Status,
+		&i.IsPublic,
+		&i.HiddenByAdmin,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
 const updateTrade = `-- name: UpdateTrade :one

@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"github.com/go-chi/chi/v5"
 	"github.com/britinogn/ctemzjournal/internal/handler"
+	"github.com/go-chi/chi/v5"
 )
 
 // MountHealth registers GET /healthz (no auth).

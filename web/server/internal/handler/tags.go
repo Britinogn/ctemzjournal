@@ -4,11 +4,11 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/britinogn/ctemzjournal/internal/service"
+	"github.com/britinogn/ctemzjournal/pkg/response"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/britinogn/ctemzjournal/internal/service"
-	"github.com/britinogn/ctemzjournal/pkg/response"
 )
 
 // Tags handles /tags CRUD. Every route is user-scoped.

@@ -3,9 +3,9 @@ package repository
 import (
 	"context"
 
+	sqlc "github.com/britinogn/ctemzjournal/internal/db/sqlc"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
-	sqlc "github.com/britinogn/ctemzjournal/internal/db/sqlc"
 )
 
 // Profiles wraps the sqlc profile queries.

@@ -1,0 +1,72 @@
+[
+  {
+    "name": "EURUSD long win",
+    "pair": "EUR/USD",
+    "direction": "long",
+    "entry": 1.085,
+    "stop_loss": 1.08,
+    "exit_price": 1.095,
+    "lot_size": 1.0,
+    "commission": 7.0,
+    "swap": 3.0,
+    "followed_rules": true,
+    "closed_at": "2026-09-01T12:00:00Z",
+    "expected": { "risk": 500, "net": 990, "r": 1.98 }
+  },
+  {
+    "name": "USDJPY short win",
+    "pair": "USD/JPY",
+    "direction": "short",
+    "entry": 150.0,
+    "stop_loss": 151.0,
+    "exit_price": 148.5,
+    "lot_size": 0.5,
+    "commission": 0.0,
+    "swap": 0.0,
+    "followed_rules": true,
+    "closed_at": "2026-09-02T12:00:00Z",
+    "expected": { "risk": 50000, "net": 75000, "r": 1.5 }
+  },
+  {
+    "name": "GBPUSD long loss with costs",
+    "pair": "GBP/USD",
+    "direction": "long",
+    "entry": 1.27,
+    "stop_loss": 1.265,
+    "exit_price": 1.266,
+    "lot_size": 2.0,
+    "commission": 10.0,
+    "swap": 2.0,
+    "followed_rules": false,
+    "closed_at": "2026-09-03T12:00:00Z",
+    "expected": { "risk": 1000, "net": -812, "r": -0.812 }
+  },
+  {
+    "name": "EURUSD long stopped out",
+    "pair": "EUR/USD",
+    "direction": "long",
+    "entry": 1.1,
+    "stop_loss": 1.095,
+    "exit_price": 1.095,
+    "lot_size": 1.0,
+    "commission": 0.0,
+    "swap": 0.0,
+    "followed_rules": true,
+    "closed_at": "2026-09-04T12:00:00Z",
+    "expected": { "risk": 500, "net": -500, "r": -1.0 }
+  },
+  {
+    "name": "XAUUSD long win",
+    "pair": "XAU/USD",
+    "direction": "long",
+    "entry": 2000.0,
+    "stop_loss": 1990.0,
+    "exit_price": 2025.0,
+    "lot_size": 0.5,
+    "commission": 0.0,
+    "swap": 0.0,
+    "followed_rules": false,
+    "closed_at": "2026-09-05T12:00:00Z",
+    "expected": { "risk": 500, "net": 1250, "r": 2.5 }
+  }
+]

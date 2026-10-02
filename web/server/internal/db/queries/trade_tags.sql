@@ -14,3 +14,6 @@ where tt.trade_id = $1 order by g.name asc;
 
 -- name: ClearTradeTags :exec
 delete from trade_tags where trade_id = $1;
+
+-- name: ListTradeIDsByTag :many
+select trade_id from trade_tags where tag_id = $1;

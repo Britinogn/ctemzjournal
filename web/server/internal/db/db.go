@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/jackc/pgx/v5/pgxpool"
 	sqlc "github.com/britinogn/ctemzjournal/internal/db/sqlc"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // DB bundles the pgx pool with the sqlc Queries.

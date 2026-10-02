@@ -69,6 +69,30 @@ func (q *Queries) ListTagsByTrade(ctx context.Context, tradeID uuid.UUID) ([]Tag
 	return items, nil
 }
 
+const listTradeIDsByTag = `-- name: ListTradeIDsByTag :many
+select trade_id from trade_tags where tag_id = $1
+`
+
+func (q *Queries) ListTradeIDsByTag(ctx context.Context, tagID uuid.UUID) ([]uuid.UUID, error) {
+	rows, err := q.db.Query(ctx, listTradeIDsByTag, tagID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []uuid.UUID
+	for rows.Next() {
+		var trade_id uuid.UUID
+		if err := rows.Scan(&trade_id); err != nil {
+			return nil, err
+		}
+		items = append(items, trade_id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const removeTradeTag = `-- name: RemoveTradeTag :exec
 delete from trade_tags where trade_id = $1 and tag_id = $2
 `

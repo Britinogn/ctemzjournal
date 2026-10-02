@@ -3,10 +3,10 @@ package handler
 import (
 	"net/http"
 
-	"github.com/google/uuid"
 	"github.com/britinogn/ctemzjournal/internal/middleware"
 	"github.com/britinogn/ctemzjournal/internal/service"
 	"github.com/britinogn/ctemzjournal/pkg/response"
+	"github.com/google/uuid"
 )
 
 // Auth handles POST /auth/sync (profile bootstrap on first login).

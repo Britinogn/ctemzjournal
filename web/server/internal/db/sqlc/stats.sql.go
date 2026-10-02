@@ -15,13 +15,13 @@ import (
 const statsByPair = `-- name: StatsByPair :many
 select pair, count(*) as trades, sum(pnl) as total_pnl, avg(r_multiple) as avg_r
 from trades where user_id = $1 and status = 'closed'
-  and ($2::uuid is null or account_id = $2)
+  and ($2::uuid is null or account_id = $2::uuid)
 group by pair
 `
 
 type StatsByPairParams struct {
-	UserID  uuid.UUID
-	Column2 uuid.UUID
+	UserID    uuid.UUID
+	AccountID pgtype.UUID
 }
 
 type StatsByPairRow struct {
@@ -32,7 +32,7 @@ type StatsByPairRow struct {
 }
 
 func (q *Queries) StatsByPair(ctx context.Context, arg StatsByPairParams) ([]StatsByPairRow, error) {
-	rows, err := q.db.Query(ctx, statsByPair, arg.UserID, arg.Column2)
+	rows, err := q.db.Query(ctx, statsByPair, arg.UserID, arg.AccountID)
 	if err != nil {
 		return nil, err
 	}
@@ -59,13 +59,13 @@ func (q *Queries) StatsByPair(ctx context.Context, arg StatsByPairParams) ([]Sta
 const statsBySetup = `-- name: StatsBySetup :many
 select setup_id, count(*) as trades, sum(pnl) as total_pnl, avg(r_multiple) as avg_r
 from trades where user_id = $1 and status = 'closed'
-  and ($2::uuid is null or account_id = $2)
+  and ($2::uuid is null or account_id = $2::uuid)
 group by setup_id
 `
 
 type StatsBySetupParams struct {
-	UserID  uuid.UUID
-	Column2 uuid.UUID
+	UserID    uuid.UUID
+	AccountID pgtype.UUID
 }
 
 type StatsBySetupRow struct {
@@ -76,7 +76,7 @@ type StatsBySetupRow struct {
 }
 
 func (q *Queries) StatsBySetup(ctx context.Context, arg StatsBySetupParams) ([]StatsBySetupRow, error) {
-	rows, err := q.db.Query(ctx, statsBySetup, arg.UserID, arg.Column2)
+	rows, err := q.db.Query(ctx, statsBySetup, arg.UserID, arg.AccountID)
 	if err != nil {
 		return nil, err
 	}
@@ -105,13 +105,13 @@ const statsClosedTrades = `-- name: StatsClosedTrades :many
 select id, pnl, r_multiple, followed_rules, opened_at, closed_at, pair, setup_id, account_id
 from trades
 where user_id = $1 and status = 'closed'
-  and ($2::uuid is null or account_id = $2)
+  and ($2::uuid is null or account_id = $2::uuid)
 order by closed_at asc nulls last
 `
 
 type StatsClosedTradesParams struct {
-	UserID  uuid.UUID
-	Column2 uuid.UUID
+	UserID    uuid.UUID
+	AccountID pgtype.UUID
 }
 
 type StatsClosedTradesRow struct {
@@ -128,7 +128,7 @@ type StatsClosedTradesRow struct {
 
 // stats: raw aggregates; R/win-rate/expectancy/drawdown math lives in pkg/calc (unit tested)
 func (q *Queries) StatsClosedTrades(ctx context.Context, arg StatsClosedTradesParams) ([]StatsClosedTradesRow, error) {
-	rows, err := q.db.Query(ctx, statsClosedTrades, arg.UserID, arg.Column2)
+	rows, err := q.db.Query(ctx, statsClosedTrades, arg.UserID, arg.AccountID)
 	if err != nil {
 		return nil, err
 	}
@@ -160,13 +160,13 @@ func (q *Queries) StatsClosedTrades(ctx context.Context, arg StatsClosedTradesPa
 const statsEquityCurve = `-- name: StatsEquityCurve :many
 select closed_at, pnl from trades
 where user_id = $1 and status = 'closed'
-  and ($2::uuid is null or account_id = $2)
+  and ($2::uuid is null or account_id = $2::uuid)
 order by closed_at asc nulls last
 `
 
 type StatsEquityCurveParams struct {
-	UserID  uuid.UUID
-	Column2 uuid.UUID
+	UserID    uuid.UUID
+	AccountID pgtype.UUID
 }
 
 type StatsEquityCurveRow struct {
@@ -175,7 +175,7 @@ type StatsEquityCurveRow struct {
 }
 
 func (q *Queries) StatsEquityCurve(ctx context.Context, arg StatsEquityCurveParams) ([]StatsEquityCurveRow, error) {
-	rows, err := q.db.Query(ctx, statsEquityCurve, arg.UserID, arg.Column2)
+	rows, err := q.db.Query(ctx, statsEquityCurve, arg.UserID, arg.AccountID)
 	if err != nil {
 		return nil, err
 	}

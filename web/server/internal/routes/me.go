@@ -1,9 +1,9 @@
 package routes
 
 import (
-	"github.com/go-chi/chi/v5"
 	"github.com/britinogn/ctemzjournal/internal/handler"
 	"github.com/britinogn/ctemzjournal/internal/middleware"
+	"github.com/go-chi/chi/v5"
 )
 
 // MountMe registers GET /me and PATCH /me behind auth.
