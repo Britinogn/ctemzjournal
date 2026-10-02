@@ -41,8 +41,17 @@ func New(d Deps) chi.Router {
 
 	meHandler := handler.NewMe(service.NewMe(profiles))
 	authHandler := handler.NewAuth(service.NewAuth(authRepo, profiles))
+	accountsHandler := handler.NewAccounts(service.NewAccounts(repository.NewAccounts(d.Queries)))
+	setupsHandler := handler.NewSetups(service.NewSetups(repository.NewSetups(d.Queries)))
+	tagsHandler := handler.NewTags(service.NewTags(repository.NewTags(d.Queries)))
 
-	MountDashboard(r, DashboardDeps{Me: meHandler, Auth: d.Auth}, authHandler)
+	MountDashboard(r, DashboardDeps{
+		Me:       meHandler,
+		Accounts: accountsHandler,
+		Setups:   setupsHandler,
+		Tags:     tagsHandler,
+		Auth:     d.Auth,
+	}, authHandler)
 
 	return r
 }
