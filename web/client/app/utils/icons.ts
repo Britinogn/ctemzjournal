@@ -13,6 +13,7 @@ export { default as ArrowRight01Icon } from '@hugeicons/core-free-icons/ArrowRig
 export { default as ArrowUp01Icon } from '@hugeicons/core-free-icons/ArrowUp01Icon'
 export { default as ChartLineData01Icon } from '@hugeicons/core-free-icons/ChartLineData01Icon'
 export { default as DashboardSquare02Icon } from '@hugeicons/core-free-icons/DashboardSquare02Icon'
+export { default as EyeIcon } from '@hugeicons/core-free-icons/EyeIcon'
 export { default as Home01Icon } from '@hugeicons/core-free-icons/Home01Icon'
 export { default as Logout02Icon } from '@hugeicons/core-free-icons/Logout02Icon'
 export { default as Menu01Icon } from '@hugeicons/core-free-icons/Menu01Icon'

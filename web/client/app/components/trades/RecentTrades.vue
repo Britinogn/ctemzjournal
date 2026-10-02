@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Alert02Icon, ArrowDown01Icon, ArrowUp01Icon, Tick02Icon } from '~/utils/icons'
+import { Alert02Icon, ArrowDown01Icon, ArrowUp01Icon, EyeIcon, Tick02Icon } from '~/utils/icons'
 import type { Trade } from '~/types'
 import { fmtDay, fmtMoney, fmtR } from '~/utils/format'
 
@@ -42,12 +42,17 @@ function resultOf(t: Trade): { label: string; cls: string } | null {
           <th class="pb-2 pr-3 font-medium">Rules</th>
           <th class="pb-2 pr-3 font-medium">Date</th>
           <th class="pb-2 pr-3 text-right font-medium">P&amp;L</th>
-          <th class="pb-2 text-right font-medium">Result</th>
+          <th class="pb-2 pr-3 text-right font-medium">Result</th>
+          <th class="pb-2 text-right font-medium"><span class="sr-only">View</span></th>
         </tr>
       </thead>
       <tbody class="divide-y divide-border">
-        <tr v-for="t in trades" :key="t.ID">
-          <td class="tnum py-2.5 pr-3 font-semibold">{{ t.Pair }}</td>
+        <tr v-for="t in trades" :key="t.ID" class="transition-colors hover:bg-bg/60">
+          <td class="tnum py-2.5 pr-3 font-semibold">
+            <NuxtLink :to="`/dashboard/trades/${t.ID}`" class="transition hover:text-primary">
+              {{ t.Pair }}
+            </NuxtLink>
+          </td>
           <td class="py-2.5 pr-3">
             <span class="inline-flex items-center gap-1 text-xs" :class="sideTone(t.Direction)">
               <UiAppIcon :icon="t.Direction === 'long' ? ArrowUp01Icon : ArrowDown01Icon" :size="14" />
@@ -74,7 +79,7 @@ function resultOf(t: Trade): { label: string; cls: string } | null {
           <td class="tnum py-2.5 pr-3 text-right font-semibold" :class="t.Pnl !== null && t.Pnl < 0 ? 'text-loss' : 'text-profit-text'">
             {{ t.Pnl === null ? '—' : fmtMoney(t.Pnl) }}
           </td>
-          <td class="py-2.5 text-right">
+          <td class="py-2.5 pr-3 text-right">
             <span
               v-if="resultOf(t)"
               class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold"
@@ -85,17 +90,33 @@ function resultOf(t: Trade): { label: string; cls: string } | null {
             </span>
             <span v-else class="text-xs text-muted">—</span>
           </td>
+          <td class="py-2.5 text-right">
+            <NuxtLink
+              :to="`/dashboard/trades/${t.ID}`"
+              aria-label="View trade"
+              class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted transition hover:bg-primary/10 hover:text-primary"
+            >
+              <UiAppIcon :icon="EyeIcon" :size="18" />
+            </NuxtLink>
+          </td>
         </tr>
       </tbody>
     </table>
 
     <!-- Mobile / small-tablet cards -->
     <ul class="space-y-2 md:hidden">
-      <li v-for="t in trades" :key="t.ID" class="rounded-xl border border-border p-3">
+      <li v-for="t in trades" :key="t.ID">
+        <NuxtLink
+          :to="`/dashboard/trades/${t.ID}`"
+          class="block rounded-xl border border-border p-3 transition active:bg-bg/60"
+        >
         <div class="flex items-center justify-between">
           <p class="tnum font-bold">{{ t.Pair }}</p>
-          <p class="tnum text-sm font-bold" :class="t.Pnl !== null && t.Pnl < 0 ? 'text-loss' : 'text-profit-text'">
-            {{ t.Pnl === null ? '—' : fmtMoney(t.Pnl) }}
+          <p class="flex items-center gap-2">
+            <span class="tnum text-sm font-bold" :class="t.Pnl !== null && t.Pnl < 0 ? 'text-loss' : 'text-profit-text'">
+              {{ t.Pnl === null ? '—' : fmtMoney(t.Pnl) }}
+            </span>
+            <UiAppIcon :icon="EyeIcon" :size="16" class="text-muted" />
           </p>
         </div>
         <div class="mt-1.5 flex items-center justify-between text-xs text-muted">
@@ -107,6 +128,7 @@ function resultOf(t: Trade): { label: string; cls: string } | null {
             {{ resultOf(t)!.label }}
           </span>
         </div>
+        </NuxtLink>
       </li>
     </ul>
 
