@@ -23,3 +23,5 @@ supabase/.branches/
 .vscode/
 *.swp
 .DS_Store
+
+trading-journal-backend-plan.docx
