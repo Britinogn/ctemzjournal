@@ -1,0 +1,44 @@
+/**
+ * Design tokens — one role, one variable.
+ * Light values are the default; dark values sit under `.dark`
+ * (color-mode module is configured with an empty classSuffix).
+ * Components map them via Tailwind names (see main.css @theme):
+ * bg-bg, bg-surface, border-border, text-text, text-muted,
+ * bg-primary, text-profit, text-loss, text-warning.
+ *
+ * Rules (from the plan):
+ * - profit/warning for icons, badges, charts, large numbers only;
+ *   profit-text/warning-text for small numbers in tables.
+ * - profit/loss never by colour alone — always pair with +/- or an arrow.
+ * - green/red are for results only; everything else is primary/neutral/warning.
+ */
+
+:root {
+  --bg: #F6F8FB;
+  --surface: #FFFFFF;
+  --border: #E2E8F0;
+  --text: #0F172A;
+  --muted: #64748B;
+  --primary: #0E7C86;
+  --profit: #16A34A;
+  --loss: #DC2626;
+  --warning: #D97706;
+  --on-primary: #FFFFFF;
+  --profit-text: #15803D;
+  --warning-text: #B45309;
+}
+
+.dark {
+  --bg: #0B1220;
+  --surface: #131C2E;
+  --border: #233047;
+  --text: #E6EBF5;
+  --muted: #94A3B8;
+  --primary: #2DD4BF;
+  --profit: #4ADE80;
+  --loss: #F87171;
+  --warning: #FBBF24;
+  --on-primary: #0B1220;
+  --profit-text: #4ADE80;
+  --warning-text: #FBBF24;
+}

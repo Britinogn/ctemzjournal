@@ -1,0 +1,53 @@
+@import "tailwindcss";
+@import "./theme.css";
+
+/**
+ * Tailwind v4 token bridge. `inline` keeps the utilities referencing the
+ * CSS variables above, so switching `.dark` recolours everything —
+ * including Chart.js, which reads the variables at runtime.
+ * Never hard-code hex values in components; use these names.
+ */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
+  --color-profit: var(--profit);
+  --color-loss: var(--loss);
+  --color-warning: var(--warning);
+  --color-on-primary: var(--on-primary);
+  --color-profit-text: var(--profit-text);
+  --color-warning-text: var(--warning-text);
+
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+  }
+
+  html.dark {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-bg text-text font-sans antialiased;
+  }
+
+  /* Numbers: prices, pips, lots, R-multiples — mono + tabular figures. */
+  .tnum {
+    @apply font-mono;
+    font-variant-numeric: tabular-nums;
+  }
+
+  ::selection {
+    background: var(--primary);
+    color: var(--on-primary);
+  }
+
+  /* Hugeicons inherit text colour by default — no global overrides. */
+}
