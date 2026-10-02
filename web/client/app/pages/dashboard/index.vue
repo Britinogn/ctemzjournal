@@ -27,7 +27,7 @@ const { data, isPending, isError, refetch } = useQuery({
 const currency = computed(() => {
   if (selectedAccount.value === 'all' || !data.value)
     return '$'
-  return data.value.Accounts.find(a => a.ID === selectedAccount.value)?.Currency === 'NGN' ? '₦' : '$'
+  return data.value.accounts.find(a => a.ID === selectedAccount.value)?.Currency === 'NGN' ? '₦' : '$'
 })
 
 const range = ref<0 | 30 | 60>(0)
@@ -43,7 +43,7 @@ const setupNames = computed<Record<string, string>>(() =>
 )
 
 const equityInfo = computed(() => {
-  const points = data.value?.Equity ?? []
+  const points = data.value?.equity_curve ?? []
   const lastPoint = points[points.length - 1]
   const firstPoint = points[0]
   if (points.length === 0 || !lastPoint || !firstPoint)
@@ -57,7 +57,7 @@ const equityInfo = computed(() => {
 })
 
 const statCards = computed(() => {
-  const s = data.value?.Summary
+  const s = data.value?.summary
   if (!s)
     return []
   return [
@@ -107,10 +107,10 @@ const statCards = computed(() => {
 })
 
 const setupItems = computed(() =>
-  (data.value?.BySetup ?? []).map(g => ({ label: g.setup_name, value: g.avg_r })),
+  (data.value?.by_setup ?? []).map(g => ({ label: g.setup_name, value: g.avg_r })),
 )
 const pairItems = computed(() =>
-  (data.value?.ByPair ?? []).map(g => ({ label: g.pair, value: g.avg_r })),
+  (data.value?.by_pair ?? []).map(g => ({ label: g.pair, value: g.avg_r })),
 )
 </script>
 
@@ -130,7 +130,7 @@ const pairItems = computed(() =>
           <option value="all">
             All accounts
           </option>
-          <option v-for="a in data?.Accounts ?? []" :key="a.ID" :value="a.ID">
+          <option v-for="a in data?.accounts ?? []" :key="a.ID" :value="a.ID">
             {{ a.Name }} ({{ a.Currency }})
           </option>
         </select>
@@ -202,11 +202,11 @@ const pairItems = computed(() =>
               </button>
             </div>
           </div>
-          <ChartsEquityChart :points="data.Equity" :range-days="range" />
+          <ChartsEquityChart :points="data.equity_curve" :range-days="range" />
         </section>
 
         <section class="rounded-2xl border border-border bg-surface p-4 xl:col-span-2" aria-label="Performance calendar">
-          <ChartsCalendarGrid :days="data.Calendar" />
+          <ChartsCalendarGrid :days="data.calendar" />
         </section>
       </div>
 
@@ -230,7 +230,7 @@ const pairItems = computed(() =>
             View all
           </NuxtLink>
         </div>
-        <TradesRecentTrades :trades="data.Recent" :setup-names="setupNames" />
+        <TradesRecentTrades :trades="data.recent_trades" :setup-names="setupNames" />
       </section>
     </template>
   </div>

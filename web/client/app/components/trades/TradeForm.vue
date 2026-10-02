@@ -63,15 +63,19 @@ function contractSize(pair: string): number {
 
 /** Display-only preview (the server computes the real values on save). */
 const preview = computed(() => {
-  const { entry, stop_loss, take_profit, lot_size, pair } = draft
-  if (entry === undefined || stop_loss === undefined || lot_size === undefined || !pair) {
-    return { riskPips: null as number | null, rewardPips: null as number | null, estRisk: null as number | null, rr: null as number | null }
-  }
+  const none = { riskPips: null as number | null, rewardPips: null as number | null, estRisk: null as number | null, rr: null as number | null }
+  const { pair } = draft
+  const entry = numOrUndef(draft.entry)
+  const stopLoss = numOrUndef(draft.stop_loss)
+  const lotSize = numOrUndef(draft.lot_size)
+  if (entry === undefined || stopLoss === undefined || lotSize === undefined || !pair)
+    return none
   const pip = pipSize(pair)
   const contract = contractSize(pair)
-  const riskPips = Math.abs(entry - stop_loss) / pip
-  const rewardPips = take_profit === undefined ? null : Math.abs(take_profit - entry) / pip
-  const estRisk = riskPips * pip * lot_size * contract
+  const takeProfit = numOrUndef(draft.take_profit)
+  const riskPips = Math.abs(entry - stopLoss) / pip
+  const rewardPips = takeProfit === undefined ? null : Math.abs(takeProfit - entry) / pip
+  const estRisk = riskPips * pip * lotSize * contract
   const rr = rewardPips !== null && riskPips > 0 ? rewardPips / riskPips : null
   return { riskPips, rewardPips, estRisk, rr }
 })
@@ -120,8 +124,16 @@ function removePending(index: number): void {
 
 const valid = computed(() =>
   draft.account_id !== '' && draft.pair.trim() !== ''
-  && draft.entry !== undefined && draft.stop_loss !== undefined && draft.lot_size !== undefined,
+  && isNum(draft.entry) && isNum(draft.stop_loss) && isNum(draft.lot_size),
 )
+
+function isNum(v: unknown): v is number {
+  return typeof v === 'number' && !Number.isNaN(v)
+}
+
+function numOrUndef(v: unknown): number | undefined {
+  return isNum(v) ? v : undefined
+}
 
 function onSubmit(): void {
   if (!valid.value || props.saving)
@@ -130,7 +142,7 @@ function onSubmit(): void {
     account_id: draft.account_id,
     pair: draft.pair.trim().toUpperCase(),
     direction: draft.direction,
-    status: draft.exit_price !== undefined ? 'closed' : 'open',
+    status: numOrUndef(draft.exit_price) !== undefined ? 'closed' : 'open',
   }
   if (draft.setup_id)
     input.setup_id = draft.setup_id
@@ -138,20 +150,27 @@ function onSubmit(): void {
     input.timeframe = draft.timeframe
   if (draft.opened_at)
     input.opened_at = new Date(draft.opened_at).toISOString()
-  if (draft.entry !== undefined)
-    input.entry = draft.entry
-  if (draft.stop_loss !== undefined)
-    input.stop_loss = draft.stop_loss
-  if (draft.take_profit !== undefined)
-    input.take_profit = draft.take_profit
-  if (draft.exit_price !== undefined)
-    input.exit_price = draft.exit_price
-  if (draft.lot_size !== undefined)
-    input.lot_size = draft.lot_size
-  if (draft.commission !== undefined)
-    input.commission = draft.commission
-  if (draft.swap !== undefined)
-    input.swap = draft.swap
+  const entry = numOrUndef(draft.entry)
+  const stopLoss = numOrUndef(draft.stop_loss)
+  const takeProfit = numOrUndef(draft.take_profit)
+  const exitPrice = numOrUndef(draft.exit_price)
+  const lotSize = numOrUndef(draft.lot_size)
+  const commission = numOrUndef(draft.commission)
+  const swap = numOrUndef(draft.swap)
+  if (entry !== undefined)
+    input.entry = entry
+  if (stopLoss !== undefined)
+    input.stop_loss = stopLoss
+  if (takeProfit !== undefined)
+    input.take_profit = takeProfit
+  if (exitPrice !== undefined)
+    input.exit_price = exitPrice
+  if (lotSize !== undefined)
+    input.lot_size = lotSize
+  if (commission !== undefined)
+    input.commission = commission
+  if (swap !== undefined)
+    input.swap = swap
   if (draft.followed_rules !== undefined)
     input.followed_rules = draft.followed_rules
   if (draft.emotion)
@@ -218,12 +237,19 @@ const labelCls = 'mb-1.5 block text-sm font-medium'
                 <option v-for="t in TIMEFRAMES" :key="t" :value="t">{{ t }}</option>
               </select>
             </div>
-            <div class="sm:col-span-2">
+            <div>
               <label for="tf-setup" :class="labelCls">Setup</label>
               <select id="tf-setup" v-model="draft.setup_id" :class="inputCls">
                 <option value="">No setup</option>
                 <option v-for="s in setups" :key="s.ID" :value="s.ID">{{ s.Name }}</option>
               </select>
+            </div>
+            <div>
+              <label for="tf-opened" :class="labelCls">Opened at</label>
+              <input
+                id="tf-opened" v-model="draft.opened_at" type="datetime-local"
+                :class="`${inputCls} tnum`"
+              >
             </div>
           </div>
         </section>
