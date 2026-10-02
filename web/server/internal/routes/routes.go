@@ -64,6 +64,11 @@ func New(d Deps) chi.Router {
 		d.Queries,
 	), imagesSvc)
 	imagesHandler := handler.NewImages(imagesSvc)
+	statsHandler := handler.NewStats(service.NewStats(
+		repository.NewStats(d.Queries),
+		profiles,
+		repository.NewSetups(d.Queries),
+	))
 
 	MountDashboard(r, DashboardDeps{
 		Me:       meHandler,
@@ -72,6 +77,7 @@ func New(d Deps) chi.Router {
 		Tags:     tagsHandler,
 		Trades:   tradesHandler,
 		Images:   imagesHandler,
+		Stats:    statsHandler,
 		Auth:     d.Auth,
 	}, authHandler)
 

@@ -8,7 +8,7 @@ import (
 
 // DashboardDeps carries the handlers mounted under the authenticated user group.
 // This is the single "user dashboard" entry point: /me plus every user-owned
-// resource (accounts, setups, tags now; trades/images/stats/export later).
+// resource (accounts, setups, tags, trades, images, stats now; export later).
 type DashboardDeps struct {
 	Me       *handler.Me
 	Accounts *handler.Accounts
@@ -16,6 +16,7 @@ type DashboardDeps struct {
 	Tags     *handler.Tags
 	Trades   *handler.Trades
 	Images   *handler.Images
+	Stats    *handler.Stats
 	Auth     *middleware.Auth
 }
 
@@ -28,4 +29,5 @@ func MountDashboard(r chi.Router, d DashboardDeps, authHandler *handler.Auth) {
 	MountTags(r, d.Tags, d.Auth)
 	MountTrades(r, d.Trades, d.Auth)
 	MountImages(r, d.Images, d.Auth)
+	MountStats(r, d.Stats, d.Auth)
 }
