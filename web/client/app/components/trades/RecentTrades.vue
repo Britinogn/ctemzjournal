@@ -3,7 +3,17 @@ import { Alert02Icon, ArrowDown01Icon, ArrowUp01Icon, Tick02Icon } from '~/utils
 import type { Trade } from '~/types'
 import { fmtDay, fmtMoney, fmtR } from '~/utils/format'
 
-defineProps<{ trades: Trade[] }>()
+defineProps<{
+  trades: Trade[];
+  /** Setup ID → name map (dashboard resolves via /setups). */
+  setupNames?: Record<string, string>;
+}>()
+
+function setupLabel(t: Trade, names?: Record<string, string>): string {
+  const name = (t.SetupID && names?.[t.SetupID]) || null
+  const base = name ?? 'No setup'
+  return t.Timeframe ? `${base} · ${t.Timeframe}` : base
+}
 
 function sideTone(dir: string): string {
   return dir === 'long' ? 'text-profit-text' : 'text-loss'
@@ -44,7 +54,7 @@ function resultOf(t: Trade): { label: string; cls: string } | null {
               {{ t.Direction === 'long' ? 'Long' : 'Short' }}
             </span>
           </td>
-          <td class="py-2.5 pr-3 text-muted">{{ t.SetupID ? t.SetupID.slice(0, 8) : 'No setup' }}</td>
+          <td class="py-2.5 pr-3 text-muted">{{ setupLabel(t, setupNames) }}</td>
           <td class="py-2.5 pr-3">
             <span
               v-if="t.FollowedRules === true"

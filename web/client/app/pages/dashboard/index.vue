@@ -8,7 +8,7 @@ import {
   TradeUpIcon,
   Wallet01Icon,
 } from '~/utils/icons'
-import { dashboardKey, type DashboardOverview } from '~/types'
+import { dashboardKey, setupsKey, type DashboardOverview, type Setup } from '~/types'
 import { fmtMoney, fmtPct, fmtR } from '~/utils/format'
 
 definePageMeta({ middleware: 'auth', layout: 'dashboard' })
@@ -32,15 +32,27 @@ const currency = computed(() => {
 
 const range = ref<0 | 30 | 60>(0)
 
+const { data: setups } = useQuery({
+  queryKey: setupsKey(),
+  queryFn: () => api.get<Setup[]>('/setups'),
+  staleTime: 5 * 60_000,
+})
+
+const setupNames = computed<Record<string, string>>(() =>
+  Object.fromEntries((setups.value ?? []).map(s => [s.ID, s.Name])),
+)
+
 const equityInfo = computed(() => {
   const points = data.value?.Equity ?? []
-  if (points.length === 0)
+  const lastPoint = points[points.length - 1]
+  const firstPoint = points[0]
+  if (points.length === 0 || !lastPoint || !firstPoint)
     return { current: 0, change: 0 }
-  const current = points[points.length - 1].equity
-  const last = new Date(points[points.length - 1].date).getTime()
+  const current = lastPoint.equity
+  const last = new Date(lastPoint.date).getTime()
   const cutoff = range.value === 0 ? 0 : last - range.value * 86_400_000
-  const base = points.find(p => new Date(p.date).getTime() >= cutoff)?.equity ?? points[0].equity
-  const start = range.value === 0 ? points[0].equity : base
+  const base = points.find(p => new Date(p.date).getTime() >= cutoff)?.equity ?? firstPoint.equity
+  const start = range.value === 0 ? firstPoint.equity : base
   return { current, change: current - start }
 })
 
@@ -72,9 +84,9 @@ const statCards = computed(() => {
     },
     {
       label: 'Max drawdown',
-      value: `-${currency.value}${Math.abs(s.max_drawdown).toLocaleString('en-US', { maximumFractionDigits: 0 })}`,
+      value: fmtMoney(-s.max_drawdown, currency.value),
       sub: 'Peak-to-trough',
-      tone: 'loss' as const,
+      tone: s.max_drawdown > 0 ? 'loss' as const : ('neutral' as const),
       icon: TradeDownIcon,
     },
     {
@@ -167,9 +179,9 @@ const pairItems = computed(() =>
                 Equity curve
               </h2>
               <p class="tnum mt-0.5 text-2xl font-bold tracking-tight">
-                {{ fmtMoney(equityInfo.current, currency.value) }}
+                {{ fmtMoney(equityInfo.current, currency) }}
                 <span class="text-sm font-semibold" :class="equityInfo.change >= 0 ? 'text-profit-text' : 'text-loss'">
-                  {{ equityInfo.change >= 0 ? '+' : '' }}{{ fmtMoney(equityInfo.change, currency.value) }}
+                  {{ fmtMoney(equityInfo.change, currency) }}
                   in {{ range === 0 ? 'all' : `${range} days` }}
                 </span>
               </p>
@@ -218,7 +230,7 @@ const pairItems = computed(() =>
             View all
           </NuxtLink>
         </div>
-        <TradesRecentTrades :trades="data.Recent" />
+        <TradesRecentTrades :trades="data.Recent" :setup-names="setupNames" />
       </section>
     </template>
   </div>

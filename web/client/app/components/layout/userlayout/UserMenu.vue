@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onClickOutside } from '@vueuse/core'
-import { Logout02Icon, Settings01Icon } from '~/utils/icons'
+import { Logout02Icon, Moon02Icon, Settings01Icon, Sun03Icon } from '~/utils/icons'
 import type { Profile } from '~/types'
 
 withDefaults(defineProps<{
@@ -12,6 +12,13 @@ withDefaults(defineProps<{
 })
 
 const { logout } = useAuth()
+const colorMode = useColorMode()
+const isDark = computed(() => colorMode.value === 'dark')
+
+function toggleTheme(): void {
+  colorMode.preference = isDark.value ? 'light' : 'dark'
+  open.value = false
+}
 const open = ref(false)
 const busy = ref(false)
 const menu = ref<HTMLElement | null>(null)
@@ -74,6 +81,15 @@ async function onLogout(): Promise<void> {
           <UiAppIcon :icon="Settings01Icon" :size="18" class="text-muted" />
           Settings
         </NuxtLink>
+        <button
+          type="button"
+          role="menuitem"
+          class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-sm transition hover:bg-bg"
+          @click="toggleTheme"
+        >
+          <UiAppIcon :icon="isDark ? Sun03Icon : Moon02Icon" :size="18" class="text-muted" />
+          {{ isDark ? 'Light mode' : 'Dark mode' }}
+        </button>
         <button
           type="button"
           role="menuitem"

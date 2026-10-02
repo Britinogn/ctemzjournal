@@ -86,7 +86,7 @@ function textTone(pnl: number): string {
         </button>
       </div>
       <p class="tnum text-sm font-bold" :class="textTone(monthPnl)">
-        {{ monthPnl > 0 ? '+' : '' }}{{ fmtSigned(monthPnl, 0) }}
+        {{ fmtSigned(monthPnl, 0) }}
       </p>
     </div>
 
@@ -104,7 +104,7 @@ function textTone(pnl: number): string {
           {{ Number(d.date.slice(8, 10)) }}
         </p>
         <p class="tnum text-[11px] font-bold leading-tight" :class="textTone(d.pnl)">
-          {{ d.pnl > 0 ? '+' : '' }}{{ fmtSigned(d.pnl, 0) }}
+          {{ fmtSigned(d.pnl, 0) }}
         </p>
       </div>
     </div>
