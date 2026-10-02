@@ -6,9 +6,10 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-// MountTrades registers /trades CRUD plus PATCH /trades/{id}/visibility
-// ("Make public" switch, off by default) behind auth.
-func MountTrades(r chi.Router, h *handler.Trades, auth *middleware.Auth) {
+// MountTrades registers /trades CRUD, PATCH /trades/{id}/visibility
+// ("Make public" switch, off by default) and GET /trades/export.csv
+// behind auth.
+func MountTrades(r chi.Router, h *handler.Trades, exp *handler.Export, auth *middleware.Auth) {
 	r.Route("/trades", func(r chi.Router) {
 		r.Use(auth.Middleware)
 		r.Post("/", h.Create)
@@ -17,5 +18,6 @@ func MountTrades(r chi.Router, h *handler.Trades, auth *middleware.Auth) {
 		r.Patch("/{id}", h.Update)
 		r.Patch("/{id}/visibility", h.SetVisibility)
 		r.Delete("/{id}", h.Delete)
+		mountExportCSV(r, exp)
 	})
 }

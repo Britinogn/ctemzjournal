@@ -16,6 +16,7 @@ type DashboardDeps struct {
 	Setups    *handler.Setups
 	Tags      *handler.Tags
 	Trades    *handler.Trades
+	Export    *handler.Export
 	Images    *handler.Images
 	Stats     *handler.Stats
 	Auth      *middleware.Auth
@@ -30,7 +31,7 @@ func MountDashboard(r chi.Router, d DashboardDeps, authHandler *handler.Auth) {
 	MountAccounts(r, d.Accounts, d.Auth)
 	MountSetups(r, d.Setups, d.Auth)
 	MountTags(r, d.Tags, d.Auth)
-	MountTrades(r, d.Trades, d.Auth)
+	MountTrades(r, d.Trades, d.Export, d.Auth)
 	MountImages(r, d.Images, d.Auth)
 	MountStats(r, d.Stats, d.Auth)
 }

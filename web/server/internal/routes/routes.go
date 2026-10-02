@@ -70,15 +70,17 @@ func New(d Deps) chi.Router {
 	tradesRepo := repository.NewTrades(d.Queries)
 	imagesRepo := repository.NewTradeImages(d.Queries)
 	imagesSvc := service.NewImages(tradesRepo, imagesRepo, cld)
-	tradesHandler := handler.NewTrades(service.NewTrades(
+	tradesSvc := service.NewTrades(
 		tradesRepo,
 		repository.NewTradeTags(d.Queries),
 		repository.NewAccounts(d.Queries),
 		repository.NewSetups(d.Queries),
 		repository.NewTags(d.Queries),
 		d.Queries,
-	), imagesSvc)
+	)
+	tradesHandler := handler.NewTrades(tradesSvc, imagesSvc)
 	imagesHandler := handler.NewImages(imagesSvc)
+	exportHandler := handler.NewExport(tradesSvc)
 	statsSvc := service.NewStats(
 		repository.NewStats(d.Queries),
 		profiles,
@@ -107,6 +109,7 @@ func New(d Deps) chi.Router {
 		Setups:    setupsHandler,
 		Tags:      tagsHandler,
 		Trades:    tradesHandler,
+		Export:    exportHandler,
 		Images:    imagesHandler,
 		Stats:     statsHandler,
 		Auth:      d.Auth,

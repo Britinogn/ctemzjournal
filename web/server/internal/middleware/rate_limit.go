@@ -16,3 +16,8 @@ func LoginLimiter(next http.Handler) http.Handler {
 func UploadLimiter(next http.Handler) http.Handler {
 	return httprate.LimitByIP(30, time.Minute)(next)
 }
+
+// ExportLimiter throttles CSV exports (heavy: full pagination + tag joins).
+func ExportLimiter(next http.Handler) http.Handler {
+	return httprate.LimitByIP(10, time.Minute)(next)
+}
