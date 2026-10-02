@@ -12,7 +12,9 @@ import (
 	"github.com/britinogn/ctemzjournal/config"
 	"github.com/britinogn/ctemzjournal/internal/db"
 	"github.com/britinogn/ctemzjournal/internal/middleware"
+	"github.com/britinogn/ctemzjournal/internal/rates"
 	"github.com/britinogn/ctemzjournal/internal/routes"
+	"github.com/britinogn/ctemzjournal/internal/worker"
 )
 
 func main() {
@@ -51,6 +53,21 @@ func main() {
 		deps.Pool = database.Pool
 		deps.Queries = database.Queries
 	}
+
+	// Live prices: background goroutine fetches ~8 pairs on a timer into an
+	// in-memory cache (browsers never call the provider). Refresh every
+	// RATES_REFRESH_MINUTES (20 min default = ~576 Twelve Data req/day).
+	ratesSvc := rates.NewService(
+		rates.TwelveData{APIKey: cfg.TwelveDataAPIKey},
+		rates.Frankfurter{},
+		nil,
+	)
+	deps.Rates = ratesSvc
+	workers := worker.NewGroup(ctx)
+	interval := time.Duration(cfg.RatesRefreshMinutes) * time.Minute
+	workers.Go(func(ctx context.Context) error { return worker.RunRates(ctx, ratesSvc, interval) })
+	defer workers.Stop()
+
 	r := routes.New(deps)
 
 	srv := &http.Server{
@@ -71,4 +88,8 @@ func main() {
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	_ = srv.Shutdown(shutdownCtx)
+	workers.Stop()
+	if err := workers.Err(); err != nil {
+		log.Printf("worker error: %v", err)
+	}
 }
