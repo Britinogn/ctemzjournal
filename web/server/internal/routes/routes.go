@@ -63,7 +63,8 @@ func New(d Deps) chi.Router {
 
 	meHandler := handler.NewMe(service.NewMe(profiles))
 	authHandler := handler.NewAuth(service.NewAuth(authRepo, profiles))
-	accountsHandler := handler.NewAccounts(service.NewAccounts(repository.NewAccounts(d.Queries)))
+	accountsSvc := service.NewAccounts(repository.NewAccounts(d.Queries))
+	accountsHandler := handler.NewAccounts(accountsSvc)
 	setupsHandler := handler.NewSetups(service.NewSetups(repository.NewSetups(d.Queries)))
 	tagsHandler := handler.NewTags(service.NewTags(repository.NewTags(d.Queries)))
 	tradesRepo := repository.NewTrades(d.Queries)
@@ -78,23 +79,31 @@ func New(d Deps) chi.Router {
 		d.Queries,
 	), imagesSvc)
 	imagesHandler := handler.NewImages(imagesSvc)
-	statsHandler := handler.NewStats(service.NewStats(
+	statsSvc := service.NewStats(
 		repository.NewStats(d.Queries),
 		profiles,
 		repository.NewSetups(d.Queries),
+		tradesRepo,
+	)
+	statsHandler := handler.NewStats(statsSvc)
+	dashboardHandler := handler.NewDashboard(service.NewDashboard(
+		profiles,
+		accountsSvc,
+		statsSvc,
 		tradesRepo,
 	))
 	adminHandler := handler.NewAdmin(service.NewAdmin(profiles, tradesRepo))
 
 	MountDashboard(r, DashboardDeps{
-		Me:       meHandler,
-		Accounts: accountsHandler,
-		Setups:   setupsHandler,
-		Tags:     tagsHandler,
-		Trades:   tradesHandler,
-		Images:   imagesHandler,
-		Stats:    statsHandler,
-		Auth:     d.Auth,
+		Me:        meHandler,
+		Dashboard: dashboardHandler,
+		Accounts:  accountsHandler,
+		Setups:    setupsHandler,
+		Tags:      tagsHandler,
+		Trades:    tradesHandler,
+		Images:    imagesHandler,
+		Stats:     statsHandler,
+		Auth:      d.Auth,
 	}, authHandler)
 	MountAdmin(r, adminHandler, d.Auth)
 
