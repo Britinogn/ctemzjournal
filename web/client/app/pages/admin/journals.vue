@@ -2,7 +2,7 @@
 import { useQuery, useQueryClient } from '@tanstack/vue-query'
 import { toast } from 'vue-sonner'
 import { adminJournalsKey } from '~/types'
-import { fmtDay, fmtMoney, fmtR } from '~/utils/format'
+import { fmtR } from '~/utils/format'
 
 definePageMeta({ middleware: 'admin', layout: 'admin' })
 
@@ -24,7 +24,7 @@ interface AdminJournal {
 const api = useApi()
 const queryClient = useQueryClient()
 const page = ref(0)
-const LIMIT = 20
+const LIMIT = 12
 
 const { data: journals, isPending, isError, refetch } = useQuery({
   queryKey: computed(() => adminJournalsKey(page.value)),
@@ -50,6 +50,22 @@ async function setHidden(id: string, hidden: boolean): Promise<void> {
     acting.value = null
   }
 }
+
+function resultOf(j: AdminJournal): { win: boolean; label: string } | null {
+  if (j.RMultiple === null || j.Pnl === null)
+    return null
+  const win = j.Pnl > 0
+  return { win, label: `${win ? 'Win' : 'Loss'} ${fmtR(j.RMultiple)}` }
+}
+
+/** Decorative trend accent (no per-trade history exists): rising for wins. */
+function sparkPath(win: boolean | null): string {
+  if (win === null)
+    return 'M0,30 L60,30 L120,30'
+  return win
+    ? 'M0,34 L30,30 L60,32 L90,20 L120,10'
+    : 'M0,10 L30,14 L60,12 L90,26 L120,34'
+}
 </script>
 
 <template>
@@ -58,10 +74,12 @@ async function setHidden(id: string, hidden: boolean): Promise<void> {
       Public journals
     </h1>
     <p class="mb-4 text-sm text-muted">
-      Hide journals that shouldn't be on the home page. Hidden ones never appear publicly.
+      Public journals show pair, setup and result in R only. Hide one to remove it from the home page.
     </p>
 
-    <div v-if="isPending" class="h-96 animate-pulse rounded-2xl bg-surface" />
+    <div v-if="isPending" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div v-for="i in 6" :key="i" class="h-64 animate-pulse rounded-2xl bg-surface" />
+    </div>
     <div v-else-if="isError" class="rounded-2xl border border-border bg-surface p-8 text-center">
       <p class="text-sm text-muted">
         Couldn't load journals.
@@ -75,57 +93,77 @@ async function setHidden(id: string, hidden: boolean): Promise<void> {
       </button>
     </div>
 
-    <section v-else class="overflow-hidden rounded-2xl border border-border bg-surface" aria-label="Journals">
-      <ul v-if="(journals ?? []).length > 0" class="divide-y divide-border">
-        <li v-for="j in journals" :key="j.ID" class="flex flex-wrap items-center gap-2 px-4 py-3">
-          <div class="min-w-0 flex-1">
-            <p class="tnum text-sm font-bold">
-              {{ j.Pair }}
-              <span class="ml-1 text-xs font-medium capitalize" :class="j.Direction === 'long' ? 'text-profit-text' : 'text-loss'">
-                {{ j.Direction }}
+    <template v-else>
+      <div v-if="(journals ?? []).length > 0" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <article v-for="j in journals" :key="j.ID" class="overflow-hidden rounded-2xl border border-border bg-surface" :aria-label="`${j.Pair} journal`">
+          <svg viewBox="0 0 120 40" class="h-20 w-full" aria-hidden="true" preserveAspectRatio="none">
+            <path
+              :d="sparkPath(resultOf(j)?.win ?? null)"
+              fill="none"
+              :stroke="(resultOf(j)?.win ?? false) ? 'var(--profit)' : 'var(--loss)'"
+              stroke-width="2.5"
+              stroke-linecap="round"
+            />
+            <path
+              :d="`${sparkPath(resultOf(j)?.win ?? null)} L120,40 L0,40 Z`"
+              :fill="(resultOf(j)?.win ?? false) ? 'var(--profit)' : 'var(--loss)'"
+              opacity="0.12"
+              stroke="none"
+            />
+          </svg>
+          <div class="p-4">
+            <div class="flex items-center justify-between gap-2">
+              <p class="tnum text-base font-bold">
+                {{ j.Pair }}
+              </p>
+              <span class="rounded-full border border-border px-2 py-0.5 text-xs capitalize text-muted">
+                {{ j.Direction === 'long' ? '↑ Long' : '↓ Short' }}{{ j.Timeframe ? ` · ${j.Timeframe}` : '' }}
               </span>
+            </div>
+            <p class="mt-0.5 truncate text-sm text-muted">
+              {{ j.SetupName || 'No setup' }}{{ j.Timeframe ? ` ${j.Timeframe}` : '' }}
             </p>
-            <p class="truncate text-xs text-muted">
-              {{ j.DisplayName || 'Trader' }} · {{ j.SetupName || 'No setup' }} · {{ fmtDay(j.CreatedAt) }}
-              <span v-if="j.RMultiple !== null" class="tnum font-semibold"> · {{ fmtR(j.RMultiple) }}</span>
-              <span v-if="j.Pnl !== null" class="tnum"> · {{ fmtMoney(j.Pnl) }}</span>
-            </p>
+            <div class="mt-1.5 flex items-center justify-between gap-2">
+              <span
+                v-if="resultOf(j)"
+                class="rounded-full px-2 py-0.5 text-xs font-semibold"
+                :class="resultOf(j)!.win ? 'bg-profit/10 text-profit-text' : 'bg-loss/10 text-loss'"
+              >
+                {{ resultOf(j)!.win ? '↑' : '↓' }} {{ resultOf(j)!.label }}
+              </span>
+              <span v-else class="text-xs text-muted">Open</span>
+              <span class="truncate text-xs text-muted">{{ j.DisplayName || 'Trader' }}</span>
+            </div>
+            <button
+              type="button"
+              :disabled="acting === j.ID"
+              class="mt-3 w-full rounded-xl border border-border py-2 text-sm font-semibold transition hover:border-primary disabled:opacity-50"
+              @click="setHidden(j.ID, !j.HiddenByAdmin)"
+            >
+              {{ acting === j.ID ? 'Working…' : j.HiddenByAdmin ? 'Restore' : 'Hide from home' }}
+            </button>
           </div>
-          <span
-            v-if="j.HiddenByAdmin"
-            class="rounded-full bg-warning/10 px-2.5 py-0.5 text-xs font-semibold text-warning-text"
-          >
-            Hidden
-          </span>
-          <button
-            type="button"
-            :disabled="acting === j.ID"
-            class="shrink-0 rounded-lg border border-border px-3 py-1.5 text-xs font-semibold transition hover:border-primary disabled:opacity-50"
-            @click="setHidden(j.ID, !j.HiddenByAdmin)"
-          >
-            {{ acting === j.ID ? 'Working…' : j.HiddenByAdmin ? 'Restore' : 'Hide' }}
-          </button>
-        </li>
-      </ul>
-      <p v-else class="p-8 text-center text-sm text-muted">
+        </article>
+      </div>
+      <p v-else class="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted">
         No public journals right now.
       </p>
-      <div class="flex items-center justify-end gap-2 border-t border-border px-4 py-3">
+      <div class="mt-4 flex items-center justify-end gap-2">
         <button
           type="button" :disabled="page === 0"
-          class="rounded-xl border border-border px-4 py-1.5 text-sm font-medium transition hover:border-primary disabled:opacity-40"
+          class="rounded-xl border border-border bg-surface px-4 py-1.5 text-sm font-medium transition hover:border-primary disabled:opacity-40"
           @click="page--"
         >
           Previous
         </button>
         <button
           type="button" :disabled="(journals ?? []).length < LIMIT"
-          class="rounded-xl border border-border px-4 py-1.5 text-sm font-medium transition hover:border-primary disabled:opacity-40"
+          class="rounded-xl border border-border bg-surface px-4 py-1.5 text-sm font-medium transition hover:border-primary disabled:opacity-40"
           @click="page++"
         >
           Next
         </button>
       </div>
-    </section>
+    </template>
   </div>
 </template>

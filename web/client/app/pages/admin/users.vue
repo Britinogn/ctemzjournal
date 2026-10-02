@@ -74,7 +74,7 @@ function fmtDate(iso: string): string {
         id="admin-user-search"
         v-model="search"
         type="search"
-        placeholder="Search by display name"
+        placeholder="Search name or email"
         class="w-full rounded-xl border border-border bg-surface px-4 py-2.5 text-sm outline-none transition placeholder:text-muted focus:border-primary md:max-w-sm"
       >
     </div>
@@ -95,21 +95,29 @@ function fmtDate(iso: string): string {
 
     <section v-else class="overflow-hidden rounded-2xl border border-border bg-surface" aria-label="Users">
       <div class="overflow-x-auto">
-        <table class="w-full min-w-[640px] text-left text-sm">
+        <table class="w-full min-w-[760px] text-left text-sm">
           <thead>
             <tr class="border-b border-border text-xs text-muted">
               <th class="px-4 py-2.5 font-medium">User</th>
               <th class="px-4 py-2.5 font-medium">Role</th>
               <th class="px-4 py-2.5 font-medium">Status</th>
               <th class="px-4 py-2.5 font-medium">Joined</th>
+              <th class="px-4 py-2.5 text-right font-medium">Trades</th>
               <th class="px-4 py-2.5 text-right font-medium">Action</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-border">
             <tr v-for="u in users ?? []" :key="u.ID">
               <td class="px-4 py-2.5">
-                <p class="font-medium">{{ u.DisplayName || '—' }}</p>
-                <p class="tnum text-xs text-muted">{{ u.ID.slice(0, 8) }}</p>
+                <div class="flex items-center gap-2.5">
+                  <LayoutUserlayoutUserAvatar :name="u.DisplayName" :size="34" />
+                  <div class="min-w-0">
+                    <p class="truncate font-medium">
+                      {{ u.DisplayName || '—' }}<span v-if="u.ID === me?.ID" class="text-muted">(you)</span>
+                    </p>
+                    <p class="tnum truncate text-xs text-muted">{{ u.Email || '—' }}</p>
+                  </div>
+                </div>
               </td>
               <td class="px-4 py-2.5 capitalize text-muted">{{ u.Role }}</td>
               <td class="px-4 py-2.5">
@@ -123,6 +131,7 @@ function fmtDate(iso: string): string {
                 </span>
               </td>
               <td class="whitespace-nowrap px-4 py-2.5 text-muted">{{ fmtDate(u.CreatedAt) }}</td>
+              <td class="tnum px-4 py-2.5 text-right font-semibold">{{ u.TradeCount }}</td>
               <td class="px-4 py-2.5 text-right">
                 <button
                   v-if="u.ID !== me?.ID"

@@ -1,12 +1,18 @@
 <script setup lang="ts">
 import { useQuery } from '@tanstack/vue-query'
-import { adminAuditKey, type AuditEntry } from '~/types'
+import { adminAuditKey, meKey, type AuditEntry } from '~/types'
 
 definePageMeta({ middleware: 'admin', layout: 'admin' })
 
 const api = useApi()
 const page = ref(0)
 const LIMIT = 20
+
+const { data: me } = useQuery({
+  queryKey: meKey(),
+  queryFn: () => api.get<{ ID: string }>('/me'),
+  staleTime: 5 * 60_000,
+})
 
 const { data: rows, isPending, isError, refetch } = useQuery({
   queryKey: computed(() => adminAuditKey(page.value)),
@@ -66,25 +72,36 @@ function metaText(meta: string): string {
     </div>
 
     <section v-else class="overflow-hidden rounded-2xl border border-border bg-surface" aria-label="Audit log">
-      <ul v-if="(rows ?? []).length > 0" class="divide-y divide-border">
-        <li v-for="row in rows" :key="row.ID" class="px-4 py-3">
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <p class="text-sm font-semibold">
-              {{ actionLabel(row.Action) }}
-            </p>
-            <p class="tnum text-xs text-muted">
-              {{ fmtTime(row.CreatedAt) }}
-            </p>
-          </div>
-          <p class="tnum mt-0.5 truncate text-xs text-muted">
-            {{ row.TargetType }} · {{ row.TargetID.slice(0, 13) }} · {{ metaText(row.Meta) }}
-          </p>
-        </li>
-      </ul>
-      <p v-else class="p-8 text-center text-sm text-muted">
+      <div class="overflow-x-auto">
+        <table class="w-full min-w-[640px] text-left text-sm">
+          <thead>
+            <tr class="border-b border-border text-xs text-muted">
+              <th class="px-4 py-2.5 font-medium">Admin</th>
+              <th class="px-4 py-2.5 font-medium">Action</th>
+              <th class="px-4 py-2.5 font-medium">Target</th>
+              <th class="px-4 py-2.5 text-right font-medium">When</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-border">
+            <tr v-for="row in rows ?? []" :key="row.ID">
+              <td class="px-4 py-2.5 font-medium">{{ row.AdminID && row.AdminID === me?.ID ? 'You' : row.AdminID?.slice(0, 8) ?? '—' }}</td>
+              <td class="px-4 py-2.5">{{ actionLabel(row.Action) }}</td>
+              <td class="tnum truncate px-4 py-2.5 text-xs text-muted">
+                {{ row.TargetType }} · {{ row.TargetID.slice(0, 13) }} · {{ metaText(row.Meta) }}
+              </td>
+              <td class="tnum whitespace-nowrap px-4 py-2.5 text-right text-xs text-muted">{{ fmtTime(row.CreatedAt) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p v-if="(rows ?? []).length === 0" class="p-8 text-center text-sm text-muted">
         No admin actions recorded yet.
       </p>
-      <div class="flex items-center justify-end gap-2 border-t border-border px-4 py-3">
+      <div class="flex flex-wrap items-center justify-between gap-2 border-t border-border px-4 py-3 text-sm">
+        <p class="text-muted">
+          Read only · page {{ page + 1 }}
+        </p>
+        <div class="flex gap-2">
         <button
           type="button" :disabled="page === 0"
           class="rounded-xl border border-border px-4 py-1.5 text-sm font-medium transition hover:border-primary disabled:opacity-40"
@@ -99,6 +116,7 @@ function metaText(meta: string): string {
         >
           Next
         </button>
+      </div>
       </div>
     </section>
   </div>

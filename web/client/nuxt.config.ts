@@ -17,7 +17,13 @@ export default defineNuxtConfig({
     ],
   },
 
-  modules: ['@nuxtjs/color-mode', '@nuxt/fonts', '@nuxt/eslint', 'vue-sonner/nuxt'],
+  modules: [
+    '@nuxtjs/color-mode',
+    '@nuxt/fonts',
+    '@nuxt/eslint',
+    'vue-sonner/nuxt',
+    '@nuxt/image',
+  ],
 
   // No public home build yet: / lands on the (guarded) dashboard.
   routeRules: {

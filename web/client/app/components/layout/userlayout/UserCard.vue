@@ -3,7 +3,13 @@ import { onClickOutside } from '@vueuse/core'
 import { Logout02Icon, Settings01Icon } from '~/utils/icons'
 import type { Profile } from '~/types'
 
-defineProps<{ profile: Profile | null }>()
+withDefaults(defineProps<{
+  profile: Profile | null;
+  /** Admin shell points this at /admin/settings instead. */
+  settingsTo?: string;
+}>(), {
+  settingsTo: '/dashboard/settings',
+})
 
 const { logout } = useAuth()
 const open = ref(false)
@@ -61,7 +67,7 @@ async function onLogout(): Promise<void> {
     >
       <div class="p-1.5">
         <NuxtLink
-          to="/dashboard/settings"
+          :to="settingsTo"
           role="menuitem"
           class="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm transition hover:bg-bg"
           @click="open = false"

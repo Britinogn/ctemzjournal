@@ -5,13 +5,36 @@
  */
 import type { Profile } from './auth';
 
+export interface SignupDay {
+  date: string;
+  count: number;
+}
+
 export interface AdminOverview {
   user_count: number;
   trade_count: number;
   new_users_this_week: number;
+  active_users: number;
+  suspended_users: number;
+  public_trades: number;
+  hidden_journals: number;
+  new_users_prev_week: number;
+  signups_last_7d: SignupDay[];
 }
 
-export type AdminUser = Profile;
+/** GET /admin/users row: profile + email + trade count. */
+export interface AdminUser {
+  ID: string;
+  DisplayName: string | null;
+  Email: string | null;
+  Role: 'user' | 'admin';
+  Status: 'active' | 'suspended';
+  Timezone: string;
+  AvatarPath: string | null;
+  CreatedAt: string;
+  UpdatedAt: string;
+  TradeCount: number;
+}
 
 /** PATCH /admin/users/{id}/status */
 export interface UserStatusUpdate {
