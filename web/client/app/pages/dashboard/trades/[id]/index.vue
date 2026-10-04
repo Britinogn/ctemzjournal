@@ -17,13 +17,14 @@ const tradeId = computed(() => String(route.params.id ?? ''))
 const api = useApi()
 const queryClient = useQueryClient()
 
+// The keys are computed, so moving from one trade to another refetches instead of showing the old one.
 const { data: trade, isPending, isError } = useQuery({
-  queryKey: ['trade', tradeId.value],
+  queryKey: computed(() => ['trade', tradeId.value]),
   queryFn: () => api.get<Trade>(`/trades/${tradeId.value}`),
 })
 
 const { data: images } = useQuery({
-  queryKey: ['trade-images', tradeId.value],
+  queryKey: computed(() => ['trade-images', tradeId.value]),
   queryFn: () => api.get<TradeImageWithUrl[]>(`/trades/${tradeId.value}/images`),
 })
 
@@ -44,25 +45,25 @@ const setupName = computed(() => {
   return setups.value?.find(s => s.ID === trade.value?.SetupID)?.Name ?? 'Setup'
 })
 
-const moneyRows = computed(() => {
-  const t = trade.value
-  if (!t)
-    return []
-  const m = (label: string, v: number | null, money = true) => ({
+/* ---------- Numbers: three blocks, like a receipt ---------- */
+function row(label: string, v: number | null, money = false) {
+  return {
     label,
     display: v === null ? '—' : money ? fmtMoney(v, currency.value) : String(v),
     tone: v === null ? 'muted' : v < 0 && money ? 'loss' : 'text',
-  })
+  }
+}
+
+// Prices, then size and costs, then risk. Net P&L has its own highlighted row underneath.
+const numberBlocks = computed(() => {
+  const t = trade.value
+  if (!t)
+    return []
   return [
-    m('Entry', t.Entry, false),
-    m('Stop loss', t.StopLoss, false),
-    m('Take profit', t.TakeProfit, false),
-    m('Exit price', t.ExitPrice, false),
-    m('Lot size', t.LotSize, false),
-    m('Commission', t.Commission),
-    m('Swap', t.Swap),
-    m('Risk', t.RiskAmount),
-    m('Net P&L', t.Pnl),
+    [row('Entry', t.Entry), row('Stop loss', t.StopLoss), row('Take profit', t.TakeProfit), row('Exit price', t.ExitPrice)],
+    [row('Lot size', t.LotSize), row('Commission', t.Commission, true), row('Swap', t.Swap, true)],
+    // With no P&L yet, the dash for Net P&L sits in this block instead of the highlighted row.
+    t.Pnl === null ? [row('Risk', t.RiskAmount, true), row('Net P&L', null, true)] : [row('Risk', t.RiskAmount, true)],
   ]
 })
 
@@ -110,20 +111,16 @@ async function onDelete(): Promise<void> {
 
 /* ---------- Shared look ---------- */
 const panel = 'rounded-2xl border border-border bg-surface p-4 md:p-5'
+const skel = 'animate-pulse rounded-2xl border border-border bg-surface'
 </script>
 
 <template>
   <div>
-    <!-- Mobile heading -->
-    <h1 class="mb-4 text-xl font-bold tracking-tight md:sr-only">
-      Trade
-    </h1>
-
     <!-- Top actions -->
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
       <NuxtLink
         to="/dashboard/trades"
-        class="inline-flex items-center gap-1.5 text-sm font-medium text-muted transition hover:text-primary"
+        class="-ml-1 inline-flex min-h-11 items-center gap-1.5 rounded-lg px-1 text-sm font-medium text-muted transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
       >
         <UiAppIcon :icon="ArrowLeft01Icon" :size="16" />
         Trades
@@ -132,14 +129,14 @@ const panel = 'rounded-2xl border border-border bg-surface p-4 md:p-5'
       <div v-if="trade" class="flex gap-2">
         <NuxtLink
           :to="`/dashboard/trades/${trade.ID}/edit`"
-          class="inline-flex h-10 items-center gap-1.5 rounded-xl border border-border bg-bg px-4 text-sm font-semibold transition hover:border-primary"
+          class="inline-flex h-11 items-center gap-1.5 rounded-xl border border-border bg-bg px-4 text-sm font-semibold transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         >
           <UiAppIcon :icon="Edit02Icon" :size="16" />
           Edit
         </NuxtLink>
         <button
           type="button"
-          class="inline-flex h-10 items-center gap-1.5 rounded-xl border border-loss/40 px-4 text-sm font-semibold text-loss transition hover:bg-loss/10"
+          class="inline-flex h-11 items-center gap-1.5 rounded-xl border border-loss/40 px-4 text-sm font-semibold text-loss transition-colors hover:bg-loss/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-loss"
           @click="confirmDelete = true"
         >
           <UiAppIcon :icon="Delete02Icon" :size="16" />
@@ -148,24 +145,26 @@ const panel = 'rounded-2xl border border-border bg-surface p-4 md:p-5'
       </div>
     </div>
 
-    <!-- Loading -->
-    <div v-if="isPending" class="space-y-3" aria-hidden="true">
-      <div class="h-32 animate-pulse rounded-2xl border border-border bg-surface" />
-      <div class="h-48 animate-pulse rounded-2xl border border-border bg-surface" />
-      <div class="h-40 animate-pulse rounded-2xl border border-border bg-surface" />
+    <!-- Loading: the same shape as the real page -->
+    <div v-if="isPending" class="space-y-4" aria-hidden="true">
+      <div :class="[skel, 'h-32']" />
+      <div class="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
+        <div :class="[skel, 'h-80']" />
+        <div :class="[skel, 'h-80']" />
+      </div>
     </div>
 
     <!-- Error -->
-    <div
-      v-else-if="isError || !trade"
-      :class="[panel, 'text-center']"
-    >
+    <div v-else-if="isError || !trade" :class="[panel, 'text-center']">
+      <h1 class="sr-only">
+        Trade
+      </h1>
       <p class="text-sm text-muted">
         Trade not found. It may have been deleted.
       </p>
       <NuxtLink
         to="/dashboard/trades"
-        class="mt-3 inline-flex h-11 items-center rounded-xl border border-border bg-bg px-5 text-sm font-semibold transition hover:border-primary"
+        class="mt-4 inline-flex h-11 items-center rounded-xl border border-border bg-bg px-5 text-sm font-semibold transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
       >
         Back to trades
       </NuxtLink>
@@ -175,22 +174,17 @@ const panel = 'rounded-2xl border border-border bg-surface p-4 md:p-5'
       <!-- Header card -->
       <section :class="panel" aria-label="Trade summary">
         <div class="flex flex-wrap items-center gap-2">
-          <h1 class="tnum text-2xl font-bold tracking-tight">
+          <h1 class="tnum text-2xl font-bold tracking-tight md:text-3xl">
             {{ trade.Pair }}
           </h1>
-          <span
-            class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold"
-            :class="trade.Direction === 'long'
-              ? 'bg-profit/10 text-profit-text'
-              : 'bg-loss/10 text-loss'"
-          >
-            {{ trade.Direction === 'long' ? '↑ Long' : '↓ Short' }}
+          <!-- Long and short are not results, so they get an arrow and a word, not green or red -->
+          <span class="inline-flex items-center gap-1 rounded-full border border-border px-2.5 py-0.5 text-xs font-semibold">
+            <span aria-hidden="true">{{ trade.Direction === 'long' ? '↑' : '↓' }}</span>
+            {{ trade.Direction === 'long' ? 'Long' : 'Short' }}
           </span>
           <span
             class="rounded-full px-2.5 py-0.5 text-xs font-medium"
-            :class="trade.Status === 'open'
-              ? 'bg-warning/10 text-warning-text'
-              : 'bg-bg text-muted'"
+            :class="trade.Status === 'open' ? 'border border-border font-semibold' : 'bg-bg text-muted'"
           >
             {{ trade.Status === 'open' ? 'Open' : 'Closed' }}
           </span>
@@ -209,155 +203,200 @@ const panel = 'rounded-2xl border border-border bg-surface p-4 md:p-5'
           · {{ trade.ClosedAt ? fmtDay(trade.ClosedAt) : 'Open' }}
         </p>
 
-        <div
-          v-if="trade.RMultiple !== null"
-          class="mt-4 flex items-end gap-4"
-        >
+        <!-- The result: signed amount with an arrow, then the R as a win or loss chip -->
+        <div v-if="trade.RMultiple !== null" class="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
           <p
-            class="tnum text-3xl font-bold"
+            class="tnum inline-flex items-center gap-1.5 text-3xl font-bold"
             :class="(trade.Pnl ?? 0) >= 0 ? 'text-profit-text' : 'text-loss'"
           >
+            <span aria-hidden="true">{{ (trade.Pnl ?? 0) >= 0 ? '↑' : '↓' }}</span>
             {{ fmtMoney(trade.Pnl ?? 0, currency) }}
           </p>
-          <p
-            class="tnum text-lg font-bold"
-            :class="trade.RMultiple >= 0 ? 'text-profit-text' : 'text-loss'"
-          >
-            {{ fmtR(trade.RMultiple) }}
-          </p>
-        </div>
-      </section>
-
-      <!-- Numbers -->
-      <section :class="[panel, 'mt-4']" aria-label="Numbers">
-        <h2 class="text-sm font-semibold">
-          Numbers
-        </h2>
-
-        <dl class="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-3">
-          <div v-for="row in moneyRows" :key="row.label">
-            <dt class="text-xs text-muted">
-              {{ row.label }}
-            </dt>
-            <dd
-              class="tnum text-sm font-semibold"
-              :class="{
-                'text-loss': row.tone === 'loss',
-                'text-muted': row.tone === 'muted',
-              }"
-            >
-              {{ row.display }}
-            </dd>
-          </div>
-        </dl>
-
-        <dl class="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-border pt-4 sm:grid-cols-3">
-          <div>
-            <dt class="text-xs text-muted">Emotion</dt>
-            <dd class="text-sm font-medium">
-              {{ trade.Emotion ?? '—' }}
-            </dd>
-          </div>
-          <div>
-            <dt class="text-xs text-muted">Rules</dt>
-            <dd class="text-sm font-medium">
-              {{ trade.FollowedRules === null ? '—' : trade.FollowedRules ? 'Followed' : 'Broken' }}
-            </dd>
-          </div>
-          <div>
-            <dt class="text-xs text-muted">Opened</dt>
-            <dd class="tnum text-sm font-medium">
-              {{ trade.OpenedAt ? fmtDay(trade.OpenedAt) : '—' }}
-            </dd>
-          </div>
-        </dl>
-
-        <div
-          v-if="trade.Notes"
-          class="mt-4 border-t border-border pt-4"
-        >
-          <p class="text-xs text-muted">
-            Notes
-          </p>
-          <p class="mt-1 whitespace-pre-wrap text-sm">
-            {{ trade.Notes }}
-          </p>
-        </div>
-      </section>
-
-      <!-- Screenshots -->
-      <section :class="[panel, 'mt-4']" aria-label="Screenshots">
-        <div class="mb-3 flex items-center justify-between">
-          <h2 class="text-sm font-semibold">
-            Screenshots
-          </h2>
-          <span class="tnum text-xs text-muted">
-            {{ (images ?? []).length }} total
-          </span>
-        </div>
-
-        <div
-          v-if="(images ?? []).length > 0"
-          class="grid grid-cols-2 gap-2 sm:grid-cols-3"
-        >
-          <figure
-            v-for="img in images"
-            :key="img.ID"
-            class="overflow-hidden rounded-xl border border-border bg-bg"
-          >
-            <img
-              :src="img.URL"
-              :alt="`${img.Kind ?? 'Trade'} screenshot`"
-              class="aspect-video w-full object-cover"
-              loading="lazy"
-            >
-            <figcaption class="px-2 py-1.5 text-center text-[11px] capitalize text-muted">
-              {{ img.Kind ?? 'chart' }}
-            </figcaption>
-          </figure>
-        </div>
-
-        <div
-          v-else
-          class="flex flex-col items-center rounded-xl border border-dashed border-border px-4 py-8 text-center"
-        >
-          <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <UiAppIcon :icon="ChartIcon" :size="20" />
-          </span>
-          <p class="mt-2 text-sm text-muted">
-            No screenshots on this trade.
-          </p>
-        </div>
-      </section>
-
-      <!-- Visibility -->
-      <section :class="[panel, 'mt-4']" aria-label="Visibility">
-        <label class="flex cursor-pointer items-center justify-between gap-3">
-          <span>
-            <span class="block text-sm font-medium">
-              Make public
-            </span>
-            <span class="block text-xs text-muted">
-              Shows pair, setup and R only. Never money or lots.
-            </span>
-          </span>
-          <input
-            type="checkbox"
-            class="peer sr-only"
-            :checked="trade.IsPublic"
-            :disabled="toggling"
-            @change="onToggleVisibility"
-          >
           <span
-            class="relative h-6 w-11 shrink-0 rounded-full bg-border transition
-            peer-checked:bg-primary
-            peer-focus-visible:ring-2 peer-focus-visible:ring-primary
-            after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5
-            after:rounded-full after:bg-white after:transition
-            peer-checked:after:translate-x-5"
-          />
-        </label>
+            class="tnum inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm font-semibold"
+            :class="trade.RMultiple >= 0 ? 'bg-profit/10 text-profit-text' : 'bg-loss/10 text-loss'"
+          >
+            <span aria-hidden="true">{{ trade.RMultiple >= 0 ? '↑' : '↓' }}</span>
+            {{ trade.RMultiple >= 0 ? 'Win' : 'Loss' }} {{ fmtR(trade.RMultiple) }}
+          </span>
+        </div>
       </section>
+
+      <!-- Two columns on a wide screen: the numbers, then the screenshots and sharing -->
+      <div class="mt-4 grid items-start gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
+        <!-- Numbers -->
+        <section :class="panel" aria-label="Numbers">
+          <h2 class="text-sm font-semibold">
+            Numbers
+          </h2>
+
+          <!-- Three blocks of rows: label on the left, value on the right, a line between blocks -->
+          <dl
+            v-for="(block, bi) in numberBlocks"
+            :key="bi"
+            :class="bi === 0 ? 'mt-3' : 'mt-3 border-t border-border pt-3'"
+          >
+            <div v-for="r in block" :key="r.label" class="flex min-h-10 items-center justify-between gap-4">
+              <dt class="text-sm text-muted">
+                {{ r.label }}
+              </dt>
+              <dd
+                class="tnum text-sm font-semibold"
+                :class="{ 'text-loss': r.tone === 'loss', 'text-muted': r.tone === 'muted' }"
+              >
+                {{ r.display }}
+              </dd>
+            </div>
+          </dl>
+
+          <!-- The bottom line gets its own tinted row, with an arrow and a sign -->
+          <dl v-if="trade.Pnl !== null" class="mt-3">
+            <div
+              class="flex items-center justify-between gap-4 rounded-xl px-4 py-3"
+              :class="trade.Pnl >= 0 ? 'bg-profit/10' : 'bg-loss/10'"
+            >
+              <dt class="text-sm font-semibold">
+                Net P&amp;L
+              </dt>
+              <dd
+                class="tnum inline-flex items-center gap-1.5 text-lg font-bold"
+                :class="trade.Pnl >= 0 ? 'text-profit-text' : 'text-loss'"
+              >
+                <span aria-hidden="true">{{ trade.Pnl >= 0 ? '↑' : '↓' }}</span>
+                {{ fmtMoney(trade.Pnl, currency) }}
+              </dd>
+            </div>
+          </dl>
+
+          <!-- Emotion, rules and open date as three small tiles -->
+          <dl class="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
+            <div class="rounded-xl bg-bg px-3 py-2.5">
+              <dt class="text-xs text-muted">
+                Emotion
+              </dt>
+              <dd class="mt-0.5 truncate text-sm font-medium capitalize">
+                {{ trade.Emotion ?? '—' }}
+              </dd>
+            </div>
+            <div class="rounded-xl bg-bg px-3 py-2.5">
+              <dt class="text-xs text-muted">
+                Rules
+              </dt>
+              <!-- Broken rules use the warning colour, with an icon and the word -->
+              <dd class="mt-0.5 flex items-center gap-1.5 text-sm font-medium" :class="trade.FollowedRules === false ? 'text-warning-text' : ''">
+                <svg v-if="trade.FollowedRules === true" class="h-4 w-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M5 12l5 5 9-10" />
+                </svg>
+                <svg v-else-if="trade.FollowedRules === false" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M12 4l9 16H3L12 4zM12 10v4M12 17h.01" />
+                </svg>
+                {{ trade.FollowedRules === null ? '—' : trade.FollowedRules ? 'Followed' : 'Broken' }}
+              </dd>
+            </div>
+            <div class="col-span-2 rounded-xl bg-bg px-3 py-2.5 sm:col-span-1">
+              <dt class="text-xs text-muted">
+                Opened
+              </dt>
+              <dd class="tnum mt-0.5 text-sm font-medium">
+                {{ trade.OpenedAt ? fmtDay(trade.OpenedAt) : '—' }}
+              </dd>
+            </div>
+          </dl>
+
+          <div v-if="trade.Notes" class="mt-4 border-t border-border pt-4">
+            <p class="text-xs text-muted">
+              Notes
+            </p>
+            <p class="mt-1.5 whitespace-pre-wrap break-words text-sm leading-relaxed">
+              {{ trade.Notes }}
+            </p>
+          </div>
+        </section>
+
+        <div class="space-y-4">
+          <!-- Screenshots -->
+          <section :class="panel" aria-label="Screenshots">
+            <div class="mb-3 flex items-center justify-between">
+              <h2 class="text-sm font-semibold">
+                Screenshots
+              </h2>
+              <span class="tnum text-xs text-muted">
+                {{ (images ?? []).length }} total
+              </span>
+            </div>
+
+            <div v-if="(images ?? []).length > 0" class="grid grid-cols-2 gap-2">
+              <!-- Each image opens full size in a new tab -->
+              <figure
+                v-for="img in images"
+                :key="img.ID"
+                class="overflow-hidden rounded-xl border border-border bg-bg"
+              >
+                <a
+                  :href="img.URL"
+                  target="_blank"
+                  rel="noopener"
+                  class="block focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary"
+                  :aria-label="`Open ${img.Kind ?? 'trade'} screenshot full size`"
+                >
+                  <img
+                    :src="img.URL"
+                    :alt="`${img.Kind ?? 'Trade'} screenshot`"
+                    class="aspect-video w-full object-cover transition-opacity hover:opacity-90"
+                    loading="lazy"
+                    decoding="async"
+                  >
+                </a>
+                <figcaption class="px-2 py-1.5 text-center text-xs font-medium capitalize text-muted">
+                  {{ img.Kind ?? 'chart' }}
+                </figcaption>
+              </figure>
+            </div>
+
+            <div
+              v-else
+              class="flex flex-col items-center rounded-xl border border-dashed border-border px-4 py-8 text-center"
+            >
+              <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <UiAppIcon :icon="ChartIcon" :size="20" />
+              </span>
+              <p class="mt-2 text-sm text-muted">
+                No screenshots on this trade.
+              </p>
+            </div>
+          </section>
+
+          <!-- Visibility -->
+          <section :class="panel" aria-label="Visibility">
+            <label class="flex min-h-12 cursor-pointer items-center justify-between gap-4" :class="toggling ? 'cursor-wait opacity-70' : ''">
+              <span>
+                <span class="block text-sm font-medium">
+                  Make public
+                </span>
+                <span class="block text-xs text-muted">
+                  Shows pair, setup and R only. Never money or lots.
+                </span>
+              </span>
+              <input
+                type="checkbox"
+                role="switch"
+                class="peer sr-only"
+                :checked="trade.IsPublic"
+                :disabled="toggling"
+                @change="onToggleVisibility"
+              >
+              <span
+                class="relative h-7 w-12 shrink-0 rounded-full bg-border transition-colors
+                peer-checked:bg-primary
+                peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary
+                after:absolute after:left-1 after:top-1 after:h-5 after:w-5
+                after:rounded-full after:bg-white after:shadow-sm after:transition-transform
+                peer-checked:after:translate-x-5"
+              />
+            </label>
+          </section>
+        </div>
+      </div>
     </template>
 
     <UiConfirmDialog

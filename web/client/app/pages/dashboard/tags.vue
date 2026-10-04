@@ -62,7 +62,7 @@ const panel = 'rounded-2xl border border-border bg-surface p-4 md:p-5'
 const input
   = 'h-11 w-full rounded-xl border border-border bg-bg px-4 text-sm outline-none transition-colors placeholder:text-muted focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/30'
 const choice
-  = 'flex h-10 cursor-pointer items-center justify-center gap-1.5 rounded-lg text-sm font-semibold capitalize text-muted transition-colors hover:text-text peer-checked:bg-surface peer-checked:shadow-sm peer-checked:ring-1 peer-checked:ring-border peer-focus-visible:outline-2-2 peer-focus-visible:outline-2-offset-2 peer-focus-visible:outline-2-primary'
+  = 'flex h-10 cursor-pointer items-center justify-center gap-1.5 rounded-lg text-sm font-semibold capitalize text-muted transition-colors hover:text-text peer-checked:bg-surface peer-checked:shadow-sm peer-checked:ring-1 peer-checked:ring-border peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary'
 </script>
 
 <template>
@@ -116,7 +116,7 @@ const choice
             </div>
             <button
               type="button"
-              class="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl border border-border bg-surface px-3 text-sm font-medium text-muted transition-colors hover:border-muted hover:text-text focus-visible:outline-2-2 focus-visible:outline-2-offset-2 focus-visible:outline-2-primary"
+              class="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl border border-loss/40 bg-surface px-3 text-sm font-medium text-loss transition-colors hover:border-loss hover:bg-loss/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-loss"
               :aria-label="`Delete ${t.Name}`"
               @click="toDelete = t"
             >
@@ -200,7 +200,7 @@ const choice
           <button
             type="submit"
             :disabled="adding"
-            class="inline-flex h-12 w-full items-center justify-center rounded-xl bg-primary text-sm font-semibold text-on-primary transition-colors hover:opacity-90 focus-visible:outline-2-2 focus-visible:outline-2-offset-2 focus-visible:outline-2-primary disabled:cursor-wait disabled:opacity-60"
+            class="inline-flex h-12 w-full items-center justify-center rounded-xl bg-primary text-sm font-semibold text-on-primary transition-colors hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-wait disabled:opacity-60"
           >
             {{ adding ? 'Adding…' : '+ Add tag' }}
           </button>

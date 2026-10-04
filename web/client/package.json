@@ -7,7 +7,9 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "@hugeicons/core-free-icons": "^4.3.5",
@@ -31,6 +33,7 @@
     "vue-sonner": "^2.0.9"
   },
   "devDependencies": {
+    "prettier": "^3.9.9",
     "vite-tsconfig-paths": "^6.1.1"
   }
 }

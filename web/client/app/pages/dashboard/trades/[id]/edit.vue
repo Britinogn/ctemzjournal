@@ -14,13 +14,14 @@ const { data: accounts } = useAccounts()
 const { data: setups } = useSetups()
 const { data: tags } = useTags()
 
+// The keys are computed, so moving from one trade to another refetches instead of showing the old one.
 const { data: trade, isPending, isError } = useQuery({
-  queryKey: ['trade', tradeId.value],
+  queryKey: computed(() => ['trade', tradeId.value]),
   queryFn: () => api.get<Trade>(`/trades/${tradeId.value}`),
 })
 
 const { data: images, refetch: refetchImages } = useQuery({
-  queryKey: ['trade-images', tradeId.value],
+  queryKey: computed(() => ['trade-images', tradeId.value]),
   queryFn: () => api.get<TradeImageWithUrl[]>(`/trades/${tradeId.value}/images`),
 })
 
@@ -55,8 +56,10 @@ const initial = computed(() => {
     emotion: t.Emotion ?? '',
     notes: t.Notes ?? '',
     status: t.Status,
+    // This starts empty because the trade itself does not carry its tag ids here. Check the note in the reply.
     tag_ids: [] as string[],
-    make_public: false,
+    // Was always false, which could quietly make a public trade private on save. It now starts as the trade's real value.
+    make_public: t.IsPublic,
   }
 })
 
@@ -110,8 +113,6 @@ async function onSubmit(input: TradeCreate, pending: PendingImage[]): Promise<vo
     return
   saving.value = true
   try {
-    // const body: TradeUpdate = { ...input }
-    // await api.patch<Trade>(`/trades/${tradeId.value}`, body)
     const body: TradeUpdate = { ...input }
     await api.patch<Trade>(`/trades/${tradeId.value}`, { ...body })
 
@@ -153,6 +154,7 @@ async function onDeleteImage(imageId: string): Promise<void> {
 
 /* ---------- Shared look ---------- */
 const panel = 'rounded-2xl border border-border bg-surface p-4 md:p-5'
+const skel = 'animate-pulse rounded-2xl border border-border bg-surface'
 </script>
 
 <template>
@@ -166,17 +168,17 @@ const panel = 'rounded-2xl border border-border bg-surface p-4 md:p-5'
     <div class="mb-4">
       <NuxtLink
         :to="`/dashboard/trades/${tradeId}`"
-        class="inline-flex items-center gap-1.5 text-sm font-medium text-muted transition hover:text-primary"
+        class="-ml-1 inline-flex min-h-11 items-center gap-1.5 rounded-lg px-1 text-sm font-medium text-muted transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
       >
         <UiAppIcon :icon="ArrowLeft01Icon" :size="16" />
         Back to trade
       </NuxtLink>
     </div>
 
-    <!-- Loading -->
-    <div v-if="isPending" class="space-y-3" aria-hidden="true">
-      <div class="h-40 animate-pulse rounded-2xl border border-border bg-surface" />
-      <div class="h-96 animate-pulse rounded-2xl border border-border bg-surface" />
+    <!-- Loading: the same shape as the real page -->
+    <div v-if="isPending" class="grid gap-4 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]" aria-hidden="true">
+      <div :class="[skel, 'h-40 xl:order-2']" />
+      <div :class="[skel, 'h-96 xl:order-1']" />
     </div>
 
     <!-- Error / Not found -->
@@ -189,15 +191,19 @@ const panel = 'rounded-2xl border border-border bg-surface p-4 md:p-5'
       </p>
       <NuxtLink
         to="/dashboard/trades"
-        class="mt-3 inline-flex h-11 items-center rounded-xl border border-border bg-bg px-5 text-sm font-semibold transition hover:border-primary"
+        class="mt-4 inline-flex h-11 items-center rounded-xl border border-border bg-bg px-5 text-sm font-semibold transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
       >
         Back to trades
       </NuxtLink>
     </div>
 
-    <template v-else>
+    <!--
+      Phones keep the original order, screenshots first.
+      On a wide screen the form takes the left column and the screenshots sit beside it, so neither pushes the other down.
+    -->
+    <div v-else class="grid items-start gap-4 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
       <!-- Existing screenshots -->
-      <section :class="[panel, 'mb-4']" aria-label="Existing screenshots">
+      <section :class="[panel, 'xl:order-2 xl:sticky xl:top-24']" aria-label="Existing screenshots">
         <div class="mb-3 flex items-center justify-between">
           <h2 class="text-sm font-semibold">
             Screenshots
@@ -209,33 +215,45 @@ const panel = 'rounded-2xl border border-border bg-surface p-4 md:p-5'
 
         <div
           v-if="(images ?? []).length > 0"
-          class="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4"
+          class="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-2"
         >
-          <div
+          <figure
             v-for="img in images"
             :key="img.ID"
             class="overflow-hidden rounded-xl border border-border bg-bg"
           >
-            <img
-              :src="img.URL"
-              :alt="`${img.Kind ?? 'Trade'} screenshot`"
-              class="aspect-video w-full object-cover"
-              loading="lazy"
+            <!-- Opens full size in a new tab -->
+            <a
+              :href="img.URL"
+              target="_blank"
+              rel="noopener"
+              class="block focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary"
+              :aria-label="`Open ${img.Kind ?? 'trade'} screenshot full size`"
             >
-            <div class="flex items-center justify-between px-2.5 py-1.5">
-              <span class="text-[11px] capitalize text-muted">
+              <img
+                :src="img.URL"
+                :alt="`${img.Kind ?? 'Trade'} screenshot`"
+                class="aspect-video w-full object-cover transition-opacity hover:opacity-90"
+                loading="lazy"
+                decoding="async"
+              >
+            </a>
+            <figcaption class="flex items-center justify-between gap-2 px-2.5 py-1.5">
+              <span class="text-xs font-medium capitalize text-muted">
                 {{ img.Kind ?? 'chart' }}
               </span>
+              <!-- A real 36px button instead of 11px text, still red -->
               <button
                 type="button"
                 :disabled="deletingImage === img.ID"
-                class="text-[11px] font-medium text-loss transition hover:underline disabled:opacity-50"
+                :aria-label="`Remove ${img.Kind ?? 'trade'} screenshot`"
+                class="inline-flex h-9 items-center rounded-lg border border-loss/40 px-3 text-xs font-semibold text-loss transition-colors hover:bg-loss/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-loss disabled:cursor-wait disabled:opacity-50"
                 @click="onDeleteImage(img.ID)"
               >
                 {{ deletingImage === img.ID ? 'Removing…' : 'Remove' }}
               </button>
-            </div>
-          </div>
+            </figcaption>
+          </figure>
         </div>
 
         <div
@@ -246,15 +264,11 @@ const panel = 'rounded-2xl border border-border bg-surface p-4 md:p-5'
             No screenshots yet — add some below.
           </p>
         </div>
-
-        <p class="mt-3 text-[11px] text-muted">
-          Clearing the exit price reopens the trade (results are cleared server-side).
-        </p>
       </section>
 
       <!-- Form panel -->
-      <section :class="panel" aria-label="Edit trade form">
-        <div class="mb-5 flex items-center gap-3">
+      <section :class="[panel, 'xl:order-1']" aria-label="Edit trade form">
+        <div class="mb-4 flex items-center gap-3">
           <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
             <UiAppIcon :icon="NoteIcon" :size="20" />
           </span>
@@ -267,6 +281,14 @@ const panel = 'rounded-2xl border border-border bg-surface p-4 md:p-5'
             </p>
           </div>
         </div>
+
+        <!-- This note used to sit under the screenshots, far from the exit price it is about -->
+        <p class="mb-5 flex items-start gap-2 rounded-xl bg-bg px-3 py-2.5 text-xs text-muted">
+          <svg class="mt-0.5 h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" /><path d="M12 11v5M12 8h.01" />
+          </svg>
+          Clearing the exit price reopens the trade (results are cleared server-side).
+        </p>
 
         <TradesTradeForm
           :accounts="accounts ?? []"
@@ -287,6 +309,6 @@ const panel = 'rounded-2xl border border-border bg-surface p-4 md:p-5'
           {{ uploadStatus }}
         </p>
       </section>
-    </template>
+    </div>
   </div>
 </template>

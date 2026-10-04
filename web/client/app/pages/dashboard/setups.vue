@@ -111,7 +111,7 @@ const field
             </div>
             <button
               type="button"
-              class="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl border border-border bg-surface px-3 text-sm font-medium text-muted transition-colors hover:border-muted hover:text-text focus-visible:outline-2-2 focus-visible:outline-2-offset-2 focus-visible:outline-2-primary"
+              class="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl border border-loss/40 bg-surface px-3 text-sm font-medium text-loss transition-colors hover:border-loss hover:bg-loss/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-loss"
               :aria-label="`Delete ${s.Name}`"
               @click="toDelete = s"
             >
@@ -183,7 +183,7 @@ const field
           <button
             type="submit"
             :disabled="adding"
-            class="inline-flex h-12 w-full items-center justify-center rounded-xl bg-primary text-sm font-semibold text-on-primary transition-colors hover:opacity-90 focus-visible:outline-2-2 focus-visible:outline-2-offset-2 focus-visible:outline-2-primary disabled:cursor-wait disabled:opacity-60"
+            class="inline-flex h-12 w-full items-center justify-center rounded-xl bg-primary text-sm font-semibold text-on-primary transition-colors hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-wait disabled:opacity-60"
           >
             {{ adding ? 'Adding…' : '+ Add setup' }}
           </button>
