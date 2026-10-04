@@ -231,7 +231,7 @@ const riskShare = (risk / (risk + reward)) * 100
               <div class="bg-border" :style="{ width: riskShare + '%' }" />
               <div class="bg-primary" :style="{ width: 100 - riskShare + '%' }" />
             </div>
-            <span class="absolute top-[34px] h-6 w-0.5 -translate-x-1/2 bg-text" :style="{ left: riskShare + '%' }" aria-hidden="true" />
+            <span class="absolute top-8.5 h-6 w-0.5 -translate-x-1/2 bg-text" :style="{ left: riskShare + '%' }" aria-hidden="true" />
             <!-- Distances below -->
             <div class="tnum absolute inset-x-0 bottom-0 flex text-sm font-semibold">
               <span class="text-muted" :style="{ width: riskShare + '%' }">Risk {{ risk }} pips</span>

@@ -134,6 +134,9 @@ function sparkPath(win: boolean | null): string {
               <span v-else class="text-xs text-muted">Open</span>
               <span class="truncate text-xs text-muted">{{ j.DisplayName || 'Trader' }}</span>
             </div>
+            <p v-if="j.HiddenByAdmin" class="mt-1.5 inline-block rounded-full bg-warning/10 px-2 py-0.5 text-xs font-semibold text-warning-text">
+              Hidden from home
+            </p>
             <button
               type="button"
               :disabled="acting === j.ID"

@@ -48,20 +48,35 @@ const underMaintenance = computed(
     />
 
     
-    <div v-if="underMaintenance" class="mx-auto flex w-full max-w-xl flex-1 flex-col items-center justify-center px-4 text-center">
-      <h1 class="text-2xl font-bold tracking-tight">
-        Down for maintenance
-      </h1>
-      <p class="mt-2 text-sm text-muted">
-        We're tuning things up. Check back shortly — your journal is safe.
-      </p>
-      <NuxtLink
-        to="/auth/login"
-        class="mt-6 rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-on-primary transition hover:opacity-90"
-      >
-        Sign in
-      </NuxtLink>
+    <div
+      v-if="underMaintenance"
+      class="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center px-4"
+    >
+      <div class="w-full rounded-2xl border border-border bg-surface p-7 text-center shadow-sm sm:p-8">
+        
+        <!-- Header -->
+        <div class="mb-6">
+          <div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <UiAppIcon :icon="Wrench01Icon" :size="22" />
+          </div>
+          <h1 class="text-2xl font-bold tracking-tight">
+            Down for maintenance
+          </h1>
+          <p class="mt-2 text-sm text-muted">
+            We're tuning things up. Check back shortly — your journal is safe.
+          </p>
+        </div>
+
+        <!-- Action -->
+        <NuxtLink
+          to="/auth/login"
+          class="inline-flex w-full items-center justify-center rounded-xl bg-primary py-3 text-sm font-semibold text-on-primary transition hover:opacity-90"
+        >
+          Sign in
+        </NuxtLink>
+      </div>
     </div>
+    
     <slot v-else />
     <LayoutHomelayoutPublicFooter
       :site-name="settings?.site_name"

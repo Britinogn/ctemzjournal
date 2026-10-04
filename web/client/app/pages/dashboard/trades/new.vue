@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { toast } from 'vue-sonner'
 import type { PendingImage, Trade, TradeCreate, UploadSignature } from '~/types'
+import { NoteIcon } from '~/utils/icons' // or whatever icon you prefer for trades
 
 definePageMeta({ middleware: 'auth', layout: 'dashboard' })
 
@@ -24,8 +25,14 @@ async function uploadImages(tradeId: string, images: PendingImage[]): Promise<vo
       form.append('signature', sig.signature)
       form.append('folder', sig.folder)
       form.append('type', sig.type)
-      const uploaded = await $fetch<{ public_id: string }>(sig.upload_url, { method: 'POST', body: form })
-      await api.post(`/trades/${tradeId}/images`, { public_id: uploaded.public_id, kind: img.kind })
+      const uploaded = await $fetch<{ public_id: string }>(sig.upload_url, {
+        method: 'POST',
+        body: form,
+      })
+      await api.post(`/trades/${tradeId}/images`, {
+        public_id: uploaded.public_id,
+        kind: img.kind,
+      })
       done += 1
       uploadStatus.value = `Uploading screenshots ${done}/${images.length}…`
     }
@@ -36,12 +43,42 @@ async function uploadImages(tradeId: string, images: PendingImage[]): Promise<vo
   uploadStatus.value = ''
 }
 
-async function onSubmit(input: TradeCreate, images: PendingImage[], makePublic: boolean): Promise<void> {
+// async function onSubmit(
+//   input: TradeCreate,
+//   images: PendingImage[],
+//   makePublic: boolean,
+// ): Promise<void> {
+//   if (saving.value)
+//     return
+//   saving.value = true
+//   try {
+//     const trade = await api.post<Trade>('/trades', input)
+//     if (makePublic) {
+//       await api.patch(`/trades/${trade.ID}/visibility`, { is_public: true })
+//     }
+//     if (images.length > 0)
+//       await uploadImages(trade.ID, images)
+//     toast.success('Trade logged')
+//     await navigateTo('/dashboard/trades')
+//   }
+//   catch {
+//     toast.error('Could not save the trade')
+//   }
+//   finally {
+//     saving.value = false
+//   }
+// }
+
+async function onSubmit(
+  input: TradeCreate,
+  images: PendingImage[],
+  makePublic: boolean,
+): Promise<void> {
   if (saving.value)
     return
   saving.value = true
   try {
-    const trade = await api.post<Trade>('/trades', input)
+    const trade = await api.post<Trade>('/trades', { ...input })   // ← fixed here
     if (makePublic) {
       await api.patch(`/trades/${trade.ID}/visibility`, { is_public: true })
     }
@@ -57,24 +94,50 @@ async function onSubmit(input: TradeCreate, images: PendingImage[], makePublic: 
     saving.value = false
   }
 }
+
+/* ---------- Shared look ---------- */
+const panel = 'rounded-2xl border border-border bg-surface p-4 md:p-5'
 </script>
 
 <template>
   <div>
-    <h1 class="mb-4 text-xl font-bold tracking-tight md:text-2xl">
+    <!-- Mobile heading (desktop uses top bar) -->
+    <h1 class="mb-4 text-xl font-bold tracking-tight md:sr-only">
       Log a trade
     </h1>
-    <TradesTradeForm
-      :accounts="accounts ?? []"
-      :setups="setups ?? []"
-      :tags="tags ?? []"
-      :saving="saving"
-      submit-label="Save trade"
-      @submit="onSubmit"
-      @cancel="navigateTo('/dashboard/trades')"
-    />
-    <p v-if="uploadStatus" role="status" class="mt-3 text-center text-sm text-muted">
-      {{ uploadStatus }}
-    </p>
+
+    <section :class="panel" aria-label="Log trade form">
+      <div class="mb-5 flex items-center gap-3">
+        <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+          <UiAppIcon :icon="NoteIcon" :size="20" />
+        </span>
+        <div>
+          <h2 class="text-sm font-semibold">
+            New trade
+          </h2>
+          <p class="text-xs text-muted">
+            Record the setup, risk and outcome
+          </p>
+        </div>
+      </div>
+
+      <TradesTradeForm
+        :accounts="accounts ?? []"
+        :setups="setups ?? []"
+        :tags="tags ?? []"
+        :saving="saving"
+        submit-label="Save trade"
+        @submit="onSubmit"
+        @cancel="navigateTo('/dashboard/trades')"
+      />
+
+      <p
+        v-if="uploadStatus"
+        role="status"
+        class="mt-4 text-center text-sm text-muted"
+      >
+        {{ uploadStatus }}
+      </p>
+    </section>
   </div>
 </template>

@@ -40,3 +40,21 @@ export { default as TwitterIcon } from '@hugeicons/core-free-icons/TwitterIcon'
 export { default as Wallet01Icon } from '@hugeicons/core-free-icons/Wallet01Icon'
 export { default as YoutubeIcon } from '@hugeicons/core-free-icons/YoutubeIcon'
 export { default as ZapIcon } from '@hugeicons/core-free-icons/ZapIcon'
+export { default as UserIcon } from '@hugeicons/core-free-icons/UserIcon'
+
+export { default as Tick01Icon } from '@hugeicons/core-free-icons/Tick01Icon'
+export { default as Mail01Icon } from '@hugeicons/core-free-icons/Mail01Icon'
+export { default as LockIcon } from '@hugeicons/core-free-icons/LockIcon'
+export { default as LockKeyIcon } from '@hugeicons/core-free-icons/LockKeyIcon'
+export { default as EyeOffIcon } from '@hugeicons/core-free-icons/EyeOffIcon'
+export { default as Loading03Icon } from '@hugeicons/core-free-icons/Loading03Icon'
+
+export { default as NoteIcon } from '@hugeicons/core-free-icons/NoteIcon'
+export { default as Wrench01Icon } from '@hugeicons/core-free-icons/Wrench01Icon'
+
+export { default as Search01Icon } from '@hugeicons/core-free-icons/Search01Icon'
+export { default as Download01Icon } from '@hugeicons/core-free-icons/Download01Icon'
+
+export { default as Edit02Icon } from '@hugeicons/core-free-icons/Edit02Icon'
+export { default as Delete02Icon } from '@hugeicons/core-free-icons/Delete02Icon'
+export { default as ChartIcon } from '@hugeicons/core-free-icons/ChartIcon'

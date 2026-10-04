@@ -1,6 +1,16 @@
 <script setup lang="ts">
 import { useQuery } from '@tanstack/vue-query'
 import { siteSettingsKey, type PublicSettings } from '~/types'
+import {
+  UserIcon,
+  Mail01Icon,
+  LockKeyIcon,
+  EyeIcon,
+  EyeOffIcon,
+  Loading03Icon,
+  ArrowLeft01Icon,
+  // CheckmarkCircle01Icon,
+} from '~/utils/icons'
 
 definePageMeta({ middleware: 'guest' })
 
@@ -17,6 +27,7 @@ const signupsOpen = computed(() => settings.value?.allow_signups ?? true)
 const displayName = ref('')
 const email = ref('')
 const password = ref('')
+const showPassword = ref(false)
 const loading = ref(false)
 const error = ref<string | null>(null)
 const { signup } = useAuth()
@@ -39,74 +50,170 @@ async function onSubmit(): Promise<void> {
 </script>
 
 <template>
-  <div class="rounded-2xl border border-border bg-surface p-6 shadow-sm sm:p-8">
-    <h1 class="text-2xl font-bold tracking-tight">
-      Create your journal
-    </h1>
-    <p class="mt-1 text-sm text-muted">
-      Start tracking every trade
-    </p>
+  <div class="w-full max-w-md">
+    <div class="rounded-2xl border border-border bg-surface p-7 shadow-sm sm:p-8">
 
-    <form v-if="signupsOpen" class="mt-6 space-y-4" @submit.prevent="onSubmit">
-      <div>
-        <label for="signup-name" class="mb-1.5 block text-sm font-medium">Display name</label>
-        <input
-          id="signup-name"
-          v-model="displayName"
-          type="text"
-          autocomplete="nickname"
-          placeholder="Ada Obi"
-          class="w-full rounded-xl border border-border bg-bg px-4 py-2.5 text-sm outline-none transition placeholder:text-muted focus:border-primary"
-        >
-      </div>
-      <div>
-        <label for="signup-email" class="mb-1.5 block text-sm font-medium">Email</label>
-        <input
-          id="signup-email"
-          v-model="email"
-          type="email"
-          required
-          autocomplete="email"
-          placeholder="you@example.com"
-          class="w-full rounded-xl border border-border bg-bg px-4 py-2.5 text-sm outline-none transition placeholder:text-muted focus:border-primary"
-        >
-      </div>
-      <div>
-        <label for="signup-password" class="mb-1.5 block text-sm font-medium">Password</label>
-        <input
-          id="signup-password"
-          v-model="password"
-          type="password"
-          required
-          minlength="6"
-          autocomplete="new-password"
-          placeholder="Minimum 6 characters"
-          class="w-full rounded-xl border border-border bg-bg px-4 py-2.5 text-sm outline-none transition placeholder:text-muted focus:border-primary"
-        >
+      <!-- Header -->
+      <div class="mb-7">
+        <div class="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+          <!-- <HugeiconsIcon :icon="UserIcon" :size="20" /> -->
+          <UiAppIcon :icon="UserIcon" :size="18" />
+        </div>
+        <h1 class="text-2xl font-bold tracking-tight">
+          Create your journal
+        </h1>
+        <p class="mt-1.5 text-sm text-muted">
+          Start tracking every trade and find your edge
+        </p>
       </div>
 
-      <p v-if="error" role="alert" class="rounded-xl bg-loss/10 px-4 py-2.5 text-sm text-loss">
-        {{ error }}
-      </p>
+      <!-- Form -->
+      <form v-if="signupsOpen" class="space-y-5" @submit.prevent="onSubmit">
+        <!-- Display name -->
+        <div>
+          <label for="signup-name" class="mb-1.5 block text-sm font-medium">
+            Display name
+          </label>
+          <div class="relative">
+            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted">
+              <!-- <HugeiconsIcon :icon="UserIcon" :size="18" /> -->
+              <UiAppIcon :icon="UserIcon" :size="18" />
+            </div>
+            <input
+              id="signup-name"
+              v-model="displayName"
+              type="text"
+              autocomplete="nickname"
+              placeholder="Ada Obi"
+              class="w-full rounded-xl border border-border bg-bg py-3 pl-11 pr-4 text-sm outline-none transition
+                placeholder:text-muted
+                focus:border-primary focus:ring-2 focus:ring-primary/20"
+            >
+          </div>
+        </div>
 
-      <button
-        type="submit"
-        :disabled="loading"
-        class="w-full rounded-xl bg-primary py-2.5 text-sm font-semibold text-on-primary transition hover:opacity-90 disabled:opacity-50"
+        <!-- Email -->
+        <div>
+          <label for="signup-email" class="mb-1.5 block text-sm font-medium">
+            Email
+          </label>
+          <div class="relative">
+            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted">
+              <!-- <HugeiconsIcon :icon="Mail01Icon" :size="18" /> -->
+              <UiAppIcon :icon="Mail01Icon" :size="18" />
+            </div>
+            <input
+              id="signup-email"
+              v-model="email"
+              type="email"
+              required
+              autocomplete="email"
+              placeholder="you@example.com"
+              class="w-full rounded-xl border border-border bg-bg py-3 pl-11 pr-4 text-sm outline-none transition
+                placeholder:text-muted
+                focus:border-primary focus:ring-2 focus:ring-primary/20"
+            >
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div>
+          <label for="signup-password" class="mb-1.5 block text-sm font-medium">
+            Password
+          </label>
+          <div class="relative">
+            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted">
+              <!-- <HugeiconsIcon :icon="LockKeyIcon" :size="18" /> -->
+              <UiAppIcon :icon="LockKeyIcon" :size="18" />
+            </div>
+            <input
+              id="signup-password"
+              v-model="password"
+              :type="showPassword ? 'text' : 'password'"
+              required
+              minlength="6"
+              autocomplete="new-password"
+              placeholder="Minimum 6 characters"
+              class="w-full rounded-xl border border-border bg-bg py-3 pl-11 pr-12 text-sm outline-none transition
+                placeholder:text-muted
+                focus:border-primary focus:ring-2 focus:ring-primary/20"
+            >
+            <button
+              type="button"
+              class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-muted transition hover:text-foreground"
+              @click="showPassword = !showPassword"
+            >
+              <!-- <HugeiconsIcon
+                :icon="showPassword ? EyeOffIcon : EyeIcon"
+                :size="18"
+              /> -->
+              <UiAppIcon 
+                :icon="showPassword ? EyeOffIcon : EyeIcon"
+                :size="18" 
+              />
+            </button>
+          </div>
+        </div>
+
+        <!-- Error -->
+        <p
+          v-if="error"
+          role="alert"
+          class="rounded-xl bg-loss/10 px-4 py-2.5 text-sm text-loss"
+        >
+          {{ error }}
+        </p>
+
+        <!-- Submit -->
+        <button
+          type="submit"
+          :disabled="loading"
+          class="relative flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-semibold text-on-primary
+            transition hover:opacity-90
+            disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <UiAppIcon
+            v-if="loading"
+            :icon="Loading03Icon"
+            :size="18"
+            class="absolute animate-spin"
+          />
+          <span :class="{ 'opacity-0': loading }">
+            Create account
+          </span>
+        </button>
+      </form>
+
+      <!-- Signups closed -->
+      <div
+        v-else
+        class="mt-2 rounded-xl border border-warning/20 bg-warning/10 px-5 py-4 text-center"
       >
-        {{ loading ? 'Creating account…' : 'Sign up' }}
-      </button>
-    </form>
+        <p class="text-sm font-medium text-warning-text">
+          Signups are currently closed
+        </p>
+        <p class="mt-1 text-sm text-muted">
+          Ask an admin for an account, or check back later.
+        </p>
+      </div>
 
-    <p v-else class="mt-6 rounded-xl bg-warning/10 px-4 py-3 text-center text-sm text-warning-text">
-      Signups are currently disabled. Ask an admin for an account, or come back later.
-    </p>
+      <!-- Footer links -->
+      <div class="mt-7 space-y-3 text-center text-sm">
+        <p class="text-muted">
+          Already have an account?
+          <NuxtLink to="/auth/login" class="font-medium text-primary hover:underline">
+            Log in
+          </NuxtLink>
+        </p>
 
-    <p class="mt-6 text-center text-sm text-muted">
-      Have an account?
-      <NuxtLink to="/auth/login" class="font-medium text-primary hover:underline">
-        Log in
-      </NuxtLink>
-    </p>
+        <NuxtLink
+          to="/"
+          class="inline-flex items-center gap-1.5 font-medium text-muted transition hover:text-primary"
+        >
+          <UiAppIcon :icon="ArrowLeft01Icon" :size="16" />
+          Back to home
+        </NuxtLink>
+      </div>
+    </div>
   </div>
 </template>
