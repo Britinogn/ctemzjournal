@@ -178,8 +178,8 @@ func TestAdminJournalHide(t *testing.T) {
 		t.Fatalf("hide: %+v (%v)", hidden, err)
 	}
 	journals, err = admin.ListJournals(ctx, 20, 0)
-	if err != nil || len(journals) != 0 {
-		t.Fatalf("hidden journal still listed: %+v (%v)", journals, err)
+	if err != nil || len(journals) != 1 || !journals[0].HiddenByAdmin {
+		t.Fatalf("hidden journal must stay listed for restore: %+v (%v)", journals, err)
 	}
 	restored, err := admin.HideJournal(ctx, adminID, trade.ID, false)
 	if err != nil || restored.HiddenByAdmin {

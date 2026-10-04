@@ -104,20 +104,21 @@ func (s *Admin) SetUserStatus(ctx context.Context, adminID, targetID uuid.UUID, 
 	return profile, nil
 }
 
-// ListJournals returns currently-public journals for moderation.
-func (s *Admin) ListJournals(ctx context.Context, limit, offset int32) ([]sqlc.ListPublicJournalsRow, error) {
+// ListJournals returns public journals for moderation, INCLUDING hidden
+// ones so they can be restored. The public endpoint keeps its own filter.
+func (s *Admin) ListJournals(ctx context.Context, limit, offset int32) ([]sqlc.ListAdminJournalsRow, error) {
 	if limit < 1 || limit > 100 {
 		limit = 20
 	}
 	if offset < 0 {
 		offset = 0
 	}
-	rows, err := s.queries.ListPublicJournals(ctx, sqlc.ListPublicJournalsParams{Limit: limit, Offset: offset})
+	rows, err := s.queries.ListAdminJournals(ctx, sqlc.ListAdminJournalsParams{Limit: limit, Offset: offset})
 	if err != nil {
 		return nil, err
 	}
 	if rows == nil {
-		rows = []sqlc.ListPublicJournalsRow{}
+		rows = []sqlc.ListAdminJournalsRow{}
 	}
 	return rows, nil
 }

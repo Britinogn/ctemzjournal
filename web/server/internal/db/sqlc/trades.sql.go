@@ -315,6 +315,103 @@ func (q *Queries) HideJournal(ctx context.Context, arg HideJournalParams) (Trade
 	return i, err
 }
 
+const listAdminJournals = `-- name: ListAdminJournals :many
+select t.id, t.user_id, t.account_id, t.setup_id, t.pair, t.direction, t.timeframe, t.opened_at, t.closed_at, t.entry, t.stop_loss, t.take_profit, t.exit_price, t.lot_size, t.commission, t.swap, t.risk_amount, t.pnl, t.r_multiple, t.followed_rules, t.emotion, t.notes, t.status, t.is_public, t.hidden_by_admin, t.created_at, t.updated_at, p.display_name, s.name as setup_name
+from trades t
+join profiles p on p.id = t.user_id
+left join setups s on s.id = t.setup_id
+where t.is_public = true
+order by t.created_at desc
+limit $1 offset $2
+`
+
+type ListAdminJournalsParams struct {
+	Limit  int32
+	Offset int32
+}
+
+type ListAdminJournalsRow struct {
+	ID            uuid.UUID
+	UserID        uuid.UUID
+	AccountID     uuid.UUID
+	SetupID       pgtype.UUID
+	Pair          string
+	Direction     string
+	Timeframe     pgtype.Text
+	OpenedAt      pgtype.Timestamptz
+	ClosedAt      pgtype.Timestamptz
+	Entry         pgtype.Numeric
+	StopLoss      pgtype.Numeric
+	TakeProfit    pgtype.Numeric
+	ExitPrice     pgtype.Numeric
+	LotSize       pgtype.Numeric
+	Commission    pgtype.Numeric
+	Swap          pgtype.Numeric
+	RiskAmount    pgtype.Numeric
+	Pnl           pgtype.Numeric
+	RMultiple     pgtype.Numeric
+	FollowedRules pgtype.Bool
+	Emotion       pgtype.Text
+	Notes         pgtype.Text
+	Status        string
+	IsPublic      bool
+	HiddenByAdmin bool
+	CreatedAt     pgtype.Timestamptz
+	UpdatedAt     pgtype.Timestamptz
+	DisplayName   pgtype.Text
+	SetupName     pgtype.Text
+}
+
+func (q *Queries) ListAdminJournals(ctx context.Context, arg ListAdminJournalsParams) ([]ListAdminJournalsRow, error) {
+	rows, err := q.db.Query(ctx, listAdminJournals, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListAdminJournalsRow
+	for rows.Next() {
+		var i ListAdminJournalsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.AccountID,
+			&i.SetupID,
+			&i.Pair,
+			&i.Direction,
+			&i.Timeframe,
+			&i.OpenedAt,
+			&i.ClosedAt,
+			&i.Entry,
+			&i.StopLoss,
+			&i.TakeProfit,
+			&i.ExitPrice,
+			&i.LotSize,
+			&i.Commission,
+			&i.Swap,
+			&i.RiskAmount,
+			&i.Pnl,
+			&i.RMultiple,
+			&i.FollowedRules,
+			&i.Emotion,
+			&i.Notes,
+			&i.Status,
+			&i.IsPublic,
+			&i.HiddenByAdmin,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DisplayName,
+			&i.SetupName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listPublicJournals = `-- name: ListPublicJournals :many
 select t.id, t.user_id, t.account_id, t.setup_id, t.pair, t.direction, t.timeframe, t.opened_at, t.closed_at, t.entry, t.stop_loss, t.take_profit, t.exit_price, t.lot_size, t.commission, t.swap, t.risk_amount, t.pnl, t.r_multiple, t.followed_rules, t.emotion, t.notes, t.status, t.is_public, t.hidden_by_admin, t.created_at, t.updated_at, p.display_name, s.name as setup_name
 from trades t
