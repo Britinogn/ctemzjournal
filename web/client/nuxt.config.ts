@@ -25,11 +25,6 @@ export default defineNuxtConfig({
     '@nuxt/image',
   ],
 
-  // No public home build yet: / lands on the (guarded) dashboard.
-  routeRules: {
-    '/': { redirect: '/dashboard' },
-  },
-
   // Plain `.dark` class (no suffix) — the design tokens switch on it.
   // Follows the OS, remembers the choice, no flash on load.
   colorMode: {

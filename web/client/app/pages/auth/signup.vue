@@ -1,5 +1,18 @@
 <script setup lang="ts">
+import { useQuery } from '@tanstack/vue-query'
+import { siteSettingsKey, type PublicSettings } from '~/types'
+
 definePageMeta({ middleware: 'guest' })
+
+const api = useApi()
+
+const { data: settings } = useQuery({
+  queryKey: siteSettingsKey(),
+  queryFn: () => api.get<PublicSettings>('/public/site-settings'),
+  staleTime: 30 * 60_000,
+})
+
+const signupsOpen = computed(() => settings.value?.allow_signups ?? true)
 
 const displayName = ref('')
 const email = ref('')
@@ -34,7 +47,7 @@ async function onSubmit(): Promise<void> {
       Start tracking every trade
     </p>
 
-    <form class="mt-6 space-y-4" @submit.prevent="onSubmit">
+    <form v-if="signupsOpen" class="mt-6 space-y-4" @submit.prevent="onSubmit">
       <div>
         <label for="signup-name" class="mb-1.5 block text-sm font-medium">Display name</label>
         <input
@@ -84,6 +97,10 @@ async function onSubmit(): Promise<void> {
         {{ loading ? 'Creating account…' : 'Sign up' }}
       </button>
     </form>
+
+    <p v-else class="mt-6 rounded-xl bg-warning/10 px-4 py-3 text-center text-sm text-warning-text">
+      Signups are currently disabled. Ask an admin for an account, or come back later.
+    </p>
 
     <p class="mt-6 text-center text-sm text-muted">
       Have an account?
