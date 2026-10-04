@@ -2,7 +2,7 @@
 const { tabs, isActive } = useAdminNav()
 
 const focusRing
-  = 'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary'
+  = 'focus-visible:outline-2-2 focus-visible:-outline-offset-2 focus-visible:outline-2-primary'
 </script>
 
 <template>

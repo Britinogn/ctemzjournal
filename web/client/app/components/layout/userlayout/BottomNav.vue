@@ -93,7 +93,7 @@ onBeforeUnmount(() => {
 })
 
 const focusRing
-  = 'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary'
+  = 'focus-visible:outline-2-2 focus-visible:-outline-offset-2 focus-visible:outline-2-primary'
 const tabCls
   = 'relative flex min-h-14 w-full flex-col items-center justify-center gap-0.5 rounded-xl text-[11px] font-medium transition-colors'
 </script>
@@ -167,7 +167,7 @@ const tabCls
               <button
                 type="button"
                 aria-label="Close"
-                class="-mr-2 inline-flex h-11 w-11 items-center justify-center rounded-xl text-muted transition-colors hover:bg-bg hover:text-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                class="-mr-2 inline-flex h-11 w-11 items-center justify-center rounded-xl text-muted transition-colors hover:bg-bg hover:text-text focus-visible:outline-2-2 focus-visible:outline-2-offset-2 focus-visible:outline-2-primary"
                 @click="close"
               >
                 <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -182,7 +182,7 @@ const tabCls
                   :to="item.to"
                   :aria-current="isActive(item) ? 'page' : undefined"
                   :class="[
-                    'flex min-h-14 items-center gap-3 px-4 text-sm font-semibold transition-colors hover:bg-bg focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary',
+                    'flex min-h-14 items-center gap-3 px-4 text-sm font-semibold transition-colors hover:bg-bg focus-visible:outline-2-2 focus-visible:-outline-offset-2 focus-visible:outline-2-primary',
                     isActive(item) ? 'bg-primary/10 text-primary' : '',
                   ]"
                 >

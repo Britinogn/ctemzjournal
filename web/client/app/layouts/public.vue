@@ -46,6 +46,8 @@ const underMaintenance = computed(
       :allow-signups="settings?.allow_signups ?? true"
       :dashboard-to="dashboardTo"
     />
+
+    
     <div v-if="underMaintenance" class="mx-auto flex w-full max-w-xl flex-1 flex-col items-center justify-center px-4 text-center">
       <h1 class="text-2xl font-bold tracking-tight">
         Down for maintenance

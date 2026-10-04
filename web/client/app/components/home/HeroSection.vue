@@ -48,13 +48,13 @@ const primary = computed(() => {
     <div class="mx-auto mt-8 flex max-w-sm flex-col items-stretch gap-2.5 sm:max-w-none sm:flex-row sm:items-center sm:justify-center">
       <NuxtLink
         :to="primary.to"
-        class="inline-flex h-12 items-center justify-center rounded-xl bg-primary px-7 text-sm font-semibold text-on-primary transition-colors hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        class="inline-flex h-12 items-center justify-center rounded-xl bg-primary px-7 text-sm font-semibold text-on-primary transition-colors hover:opacity-90 focus-visible:outline-2 focus-visible:outline-2-2 focus-visible:outline-2-offset-2 focus-visible:outline-2-primary"
       >
         {{ primary.label }}
       </NuxtLink>
       <NuxtLink
         to="/journals"
-        class="inline-flex h-12 items-center justify-center rounded-xl border border-border bg-surface px-7 text-sm font-semibold transition-colors hover:border-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        class="inline-flex h-12 items-center justify-center rounded-xl border border-border bg-surface px-7 text-sm font-semibold transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-2-2 focus-visible:outline-2-offset-2 focus-visible:outline-2-primary"
       >
         Browse public journals
       </NuxtLink>
@@ -65,7 +65,7 @@ const primary = computed(() => {
 
     <!-- Product preview. The bottom fades out so it reads as the start of the page below. -->
     <div
-      class="mx-auto mt-12 w-full max-w-3xl text-left [mask-image:linear-gradient(to_bottom,black_72%,transparent)]"
+      class="mx-auto mt-12 w-full max-w-3xl text-left mask-[linear-gradient(to_bottom,black_72%,transparent)]"
       role="img"
       :aria-label="`Preview of the ${siteName} dashboard: an equity curve rising to +$7,928, a 60% win rate, +0.83R average and 3 open trades.`"
     >

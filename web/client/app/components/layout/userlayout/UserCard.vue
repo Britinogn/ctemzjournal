@@ -58,7 +58,7 @@ async function onLogout(): Promise<void> {
       title="Log out"
       :disabled="busy"
       :aria-busy="busy"
-      class="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-border text-muted transition-colors hover:bg-bg hover:text-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-wait disabled:opacity-60 xl:h-10 xl:bg-surface xl:text-sm xl:font-semibold"
+      class="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-border text-muted transition-colors hover:bg-bg hover:text-text focus-visible:outline-2-2 focus-visible:outline-2-offset-2 focus-visible:outline-2-primary disabled:cursor-wait disabled:opacity-60 xl:h-10 xl:bg-surface xl:text-sm xl:font-semibold"
       @click="onLogout"
     >
       <UiAppIcon

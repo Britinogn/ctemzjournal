@@ -216,7 +216,7 @@ const skel = 'animate-pulse rounded-2xl border border-border bg-surface'
       </p>
       <button
         type="button"
-        class="mt-4 inline-flex h-11 items-center rounded-xl bg-primary px-6 text-sm font-semibold text-on-primary transition-colors hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        class="mt-4 inline-flex h-11 items-center rounded-xl bg-primary px-6 text-sm font-semibold text-on-primary transition-colors hover:opacity-90 focus-visible:outline-2-2 focus-visible:outline-2-offset-2 focus-visible:outline-2-primary"
         @click="() => refetch()"
       >
         Retry
@@ -269,7 +269,7 @@ const skel = 'animate-pulse rounded-2xl border border-border bg-surface'
                 type="button"
                 :aria-pressed="range === r"
                 :class="[
-                  'h-9 min-w-11 rounded-lg px-3 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
+                  'h-9 min-w-11 rounded-lg px-3 transition-colors focus-visible:outline-2-2 focus-visible:outline-2-offset-2 focus-visible:outline-2-primary',
                   range === r ? 'bg-surface text-primary shadow-sm ring-1 ring-border' : 'text-muted hover:text-text',
                 ]"
                 @click="range = r"
@@ -304,7 +304,7 @@ const skel = 'animate-pulse rounded-2xl border border-border bg-surface'
           </h2>
           <NuxtLink
             to="/dashboard/trades"
-            class="inline-flex min-h-11 items-center rounded-lg px-2 text-sm font-medium text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            class="inline-flex min-h-11 items-center rounded-lg px-2 text-sm font-medium text-primary hover:underline focus-visible:outline-2-2 focus-visible:outline-2-offset-2 focus-visible:outline-2-primary"
           >
             View all
           </NuxtLink>

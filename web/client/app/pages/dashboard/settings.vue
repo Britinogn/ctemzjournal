@@ -128,7 +128,7 @@ const skel = 'animate-pulse rounded-2xl border border-border bg-surface'
         <li v-for="l in LISTS" :key="l.to">
           <NuxtLink
             :to="l.to"
-            class="flex min-h-14 items-center gap-3 px-4 text-sm font-semibold transition-colors hover:bg-bg focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary"
+            class="flex min-h-14 items-center gap-3 px-4 text-sm font-semibold transition-colors hover:bg-bg focus-visible:outline-2-2 focus-visible:-outline-offset-2 focus-visible:outline-2-primary"
           >
             <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
               <UiAppIcon :icon="l.icon" :size="18" />
@@ -189,7 +189,7 @@ const skel = 'animate-pulse rounded-2xl border border-border bg-surface'
           <button
             type="submit"
             :disabled="saving || !dirty"
-            class="inline-flex h-12 w-full items-center justify-center rounded-xl bg-primary px-6 text-sm font-semibold text-on-primary transition-colors hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+            class="inline-flex h-12 w-full items-center justify-center rounded-xl bg-primary px-6 text-sm font-semibold text-on-primary transition-colors hover:opacity-90 focus-visible:outline-2-2 focus-visible:outline-2-offset-2 focus-visible:outline-2-primary disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
           >
             {{ saving ? 'Saving…' : 'Save changes' }}
           </button>
@@ -212,7 +212,7 @@ const skel = 'animate-pulse rounded-2xl border border-border bg-surface'
               type="button"
               :aria-pressed="colorMode.preference === t.value"
               :class="[
-                'flex h-11 items-center justify-center gap-1.5 rounded-xl border text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
+                'flex h-11 items-center justify-center gap-1.5 rounded-xl border text-sm font-medium transition-colors focus-visible:outline-2-2 focus-visible:outline-2-offset-2 focus-visible:outline-2-primary',
                 colorMode.preference === t.value
                   ? 'border-primary bg-primary/10 font-semibold text-primary'
                   : 'border-border text-muted hover:text-text',
@@ -268,7 +268,7 @@ const skel = 'animate-pulse rounded-2xl border border-border bg-surface'
             type="button"
             :disabled="signingOut"
             :aria-busy="signingOut"
-            class="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-border text-sm font-semibold text-muted transition-colors hover:border-muted hover:text-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-wait disabled:opacity-60"
+            class="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-border text-sm font-semibold text-muted transition-colors hover:border-muted hover:text-text focus-visible:outline-2-2 focus-visible:outline-2-offset-2 focus-visible:outline-2-primary disabled:cursor-wait disabled:opacity-60"
             @click="onLogout"
           >
             <UiAppIcon :icon="Logout02Icon" :size="18" />

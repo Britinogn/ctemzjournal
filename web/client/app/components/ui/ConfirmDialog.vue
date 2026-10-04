@@ -105,7 +105,7 @@ onBeforeUnmount(() => {
                 <h2 :id="titleId" class="text-base font-bold">
                   {{ title }}
                 </h2>
-                <p :id="descId" class="mt-1 break-words text-sm text-muted">
+                <p :id="descId" class="mt-1 wrap-break-word text-sm text-muted">
                   {{ message }}
                 </p>
               </div>
@@ -117,7 +117,7 @@ onBeforeUnmount(() => {
                 ref="cancelBtn"
                 type="button"
                 :disabled="busy"
-                class="inline-flex h-11 items-center justify-center rounded-xl border border-border px-5 text-sm font-semibold transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-50"
+                class="inline-flex h-11 items-center justify-center rounded-xl border border-border px-5 text-sm font-semibold transition-colors hover:border-primary focus-visible:outline-2-2 focus-visible:outline-2-offset-2 focus-visible:outline-2-primary disabled:cursor-not-allowed disabled:opacity-50"
                 @click="requestClose"
               >
                 Cancel
@@ -127,7 +127,7 @@ onBeforeUnmount(() => {
                 type="button"
                 :disabled="busy"
                 :aria-busy="busy"
-                class="inline-flex h-11 items-center justify-center rounded-xl bg-loss px-5 text-sm font-semibold text-on-primary transition-colors hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-loss disabled:cursor-wait disabled:opacity-60"
+                class="inline-flex h-11 items-center justify-center rounded-xl bg-loss px-5 text-sm font-semibold text-on-primary transition-colors hover:opacity-90 focus-visible:outline-2-2 focus-visible:outline-2-offset-2 focus-visible:outline-2-loss disabled:cursor-wait disabled:opacity-60"
                 @click="emit('confirm')"
               >
                 {{ busy ? 'Working…' : (confirmLabel ?? 'Delete') }}

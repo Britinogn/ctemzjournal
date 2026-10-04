@@ -123,7 +123,7 @@ const summary = computed(() =>
             :key="c.value"
             type="button"
             :aria-pressed="resultFilter === c.value"
-            class="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full px-4 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            class="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full px-4 text-sm font-semibold transition-colors  focus-visible:outline-2-2 focus-visible:outline-2-offset-2 focus-visible:outline-2-primary"
             :class="resultFilter === c.value ? 'bg-primary text-on-primary' : 'border border-border bg-surface text-muted hover:text-text'"
             @click="setQuery({ result: c.value })"
           >
@@ -139,7 +139,7 @@ const summary = computed(() =>
             :key="c.value"
             type="button"
             :aria-pressed="dirFilter === c.value"
-            class="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full px-4 text-sm font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            class="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full px-4 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-2-2 focus-visible:outline-2-offset-2 focus-visible:outline-2-primary"
             :class="dirFilter === c.value ? 'border border-primary bg-primary/10 text-primary' : 'border border-border bg-surface text-muted hover:text-text'"
             @click="setQuery({ dir: c.value })"
           >

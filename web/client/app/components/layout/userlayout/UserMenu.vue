@@ -49,7 +49,7 @@ async function onLogout(): Promise<void> {
 }
 
 const itemCls
-  = 'flex h-11 w-full items-center gap-2.5 rounded-xl px-3 text-left text-sm font-medium transition-colors hover:bg-bg focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary disabled:cursor-wait disabled:opacity-60'
+  = 'flex h-11 w-full items-center gap-2.5 rounded-xl px-3 text-left text-sm font-medium transition-colors hover:bg-bg focus-visible:outline-2-2 focus-visible:-outline-offset-2 focus-visible:outline-2-primary disabled:cursor-wait disabled:opacity-60'
 </script>
 
 <template>

@@ -27,13 +27,13 @@ const primary = computed(() => {
       <div class="mx-auto mt-7 flex max-w-sm flex-col gap-2.5 sm:max-w-none sm:flex-row sm:justify-center">
         <NuxtLink
           :to="primary.to"
-          class="inline-flex h-12 items-center justify-center rounded-xl bg-primary px-7 text-sm font-semibold text-on-primary transition-colors hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          class="inline-flex h-12 items-center justify-center rounded-xl bg-primary px-7 text-sm font-semibold text-on-primary transition-colors hover:opacity-90 focus-visible:outline-2 focus-visible:outline-2-2 focus-visible:outline-2-offset-2 focus-visible:outline-2-primary"
         >
           {{ primary.label }}
         </NuxtLink>
         <NuxtLink
           to="/journals"
-          class="inline-flex h-12 items-center justify-center rounded-xl border border-border bg-surface px-7 text-sm font-semibold transition-colors hover:border-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          class="inline-flex h-12 items-center justify-center rounded-xl border border-border bg-surface px-7 text-sm font-semibold transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-2-2 focus-visible:outline-2-offset-2 focus-visible:outline-2-primary"
         >
           Browse public journals
         </NuxtLink>

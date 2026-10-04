@@ -79,7 +79,7 @@ const primaryBtn
           <!-- Active marker, so the current page is not shown by colour alone -->
           <span
             v-if="isActive(l.to)"
-            class="absolute inset-x-3 -bottom-[13px] h-0.5 rounded-full bg-primary"
+            class="absolute inset-x-3 -bottom-3.25 h-0.5 rounded-full bg-primary"
             aria-hidden="true"
           />
         </NuxtLink>
