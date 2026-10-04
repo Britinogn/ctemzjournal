@@ -213,48 +213,14 @@ const skel = 'animate-pulse rounded-2xl border border-border bg-surface'
           </span>
         </div>
 
-        <div
+        <TradesImageGallery
           v-if="(images ?? []).length > 0"
-          class="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-2"
-        >
-          <figure
-            v-for="img in images"
-            :key="img.ID"
-            class="overflow-hidden rounded-xl border border-border bg-bg"
-          >
-            <!-- Opens full size in a new tab -->
-            <a
-              :href="img.URL"
-              target="_blank"
-              rel="noopener"
-              class="block focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary"
-              :aria-label="`Open ${img.Kind ?? 'trade'} screenshot full size`"
-            >
-              <img
-                :src="img.URL"
-                :alt="`${img.Kind ?? 'Trade'} screenshot`"
-                class="aspect-video w-full object-cover transition-opacity hover:opacity-90"
-                loading="lazy"
-                decoding="async"
-              >
-            </a>
-            <figcaption class="flex items-center justify-between gap-2 px-2.5 py-1.5">
-              <span class="text-xs font-medium capitalize text-muted">
-                {{ img.Kind ?? 'chart' }}
-              </span>
-              <!-- A real 36px button instead of 11px text, still red -->
-              <button
-                type="button"
-                :disabled="deletingImage === img.ID"
-                :aria-label="`Remove ${img.Kind ?? 'trade'} screenshot`"
-                class="inline-flex h-9 items-center rounded-lg border border-loss/40 px-3 text-xs font-semibold text-loss transition-colors hover:bg-loss/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-loss disabled:cursor-wait disabled:opacity-50"
-                @click="onDeleteImage(img.ID)"
-              >
-                {{ deletingImage === img.ID ? 'Removing…' : 'Remove' }}
-              </button>
-            </figcaption>
-          </figure>
-        </div>
+          :images="images ?? []"
+          removable
+          :removing-id="deletingImage"
+          grid-class="grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-2"
+          @remove="onDeleteImage"
+        />
 
         <div
           v-else

@@ -325,33 +325,7 @@ const skel = 'animate-pulse rounded-2xl border border-border bg-surface'
               </span>
             </div>
 
-            <div v-if="(images ?? []).length > 0" class="grid grid-cols-2 gap-2">
-              <!-- Each image opens full size in a new tab -->
-              <figure
-                v-for="img in images"
-                :key="img.ID"
-                class="overflow-hidden rounded-xl border border-border bg-bg"
-              >
-                <a
-                  :href="img.URL"
-                  target="_blank"
-                  rel="noopener"
-                  class="block focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary"
-                  :aria-label="`Open ${img.Kind ?? 'trade'} screenshot full size`"
-                >
-                  <img
-                    :src="img.URL"
-                    :alt="`${img.Kind ?? 'Trade'} screenshot`"
-                    class="aspect-video w-full object-cover transition-opacity hover:opacity-90"
-                    loading="lazy"
-                    decoding="async"
-                  >
-                </a>
-                <figcaption class="px-2 py-1.5 text-center text-xs font-medium capitalize text-muted">
-                  {{ img.Kind ?? 'chart' }}
-                </figcaption>
-              </figure>
-            </div>
+            <TradesImageGallery v-if="(images ?? []).length > 0" :images="images ?? []" />
 
             <div
               v-else
