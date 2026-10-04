@@ -1,24 +1,11 @@
 <script setup lang="ts">
-import { onClickOutside } from '@vueuse/core'
-import { Logout02Icon, Settings01Icon } from '~/utils/icons'
+import { Logout02Icon } from '~/utils/icons'
 import type { Profile } from '~/types'
 
-withDefaults(defineProps<{
-  profile: Profile | null;
-  /** Admin shell points this at /admin/settings instead. */
-  settingsTo?: string;
-}>(), {
-  settingsTo: '/dashboard/settings',
-})
+defineProps<{ profile: Profile | null }>()
 
 const { logout } = useAuth()
-const open = ref(false)
 const busy = ref(false)
-const menu = ref<HTMLElement | null>(null)
-
-onClickOutside(menu, () => {
-  open.value = false
-})
 
 async function onLogout(): Promise<void> {
   if (busy.value)
@@ -29,63 +16,57 @@ async function onLogout(): Promise<void> {
   }
   finally {
     busy.value = false
-    open.value = false
   }
 }
 </script>
 
 <template>
-  <div ref="menu" class="relative">
-    <button
-      type="button"
-      aria-haspopup="menu"
-      :aria-expanded="open"
-      aria-label="Account menu"
-      class="flex w-full items-center gap-3 rounded-2xl border border-border bg-surface p-3 text-left transition hover:border-primary"
-      @click="open = !open"
-      @keydown.escape="open = false"
-    >
+  <!--
+    No popover any more. With Settings gone (the sidebar already has a Settings tab) the menu held one item,
+    so Log out is its own button.
+    Tablet (icon rail): avatar above an icon-only logout button.
+    Desktop: one card with the name and role, and a Log out button under it.
+  -->
+  <div
+    class="flex flex-col items-center gap-2 xl:items-stretch xl:gap-3 xl:rounded-2xl xl:border xl:border-border xl:bg-bg xl:p-3"
+    role="group"
+    aria-label="Account"
+  >
+    <div class="flex items-center gap-3" :title="profile?.DisplayName || 'Trader'">
       <LayoutUserlayoutUserAvatar
         :name="profile?.DisplayName"
         :email="undefined"
         :size="40"
+        class="shrink-0"
       />
       <div class="hidden min-w-0 flex-1 leading-tight xl:block">
         <p class="truncate text-sm font-semibold">
           {{ profile?.DisplayName || 'Trader' }}
         </p>
-        <p class="text-xs capitalize text-muted">
+        <p
+          class="text-xs font-medium capitalize"
+          :class="profile?.Role === 'admin' ? 'text-warning-text' : 'text-muted'"
+        >
           {{ profile?.Role || 'user' }}
         </p>
       </div>
-    </button>
-
-    <div
-      v-if="open"
-      role="menu"
-      class="absolute inset-x-0 bottom-full z-50 mb-2 overflow-hidden rounded-2xl border border-border bg-surface shadow-xl"
-    >
-      <div class="p-1.5">
-        <NuxtLink
-          :to="settingsTo"
-          role="menuitem"
-          class="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm transition hover:bg-bg"
-          @click="open = false"
-        >
-          <UiAppIcon :icon="Settings01Icon" :size="18" class="text-muted" />
-          Settings
-        </NuxtLink>
-        <button
-          type="button"
-          role="menuitem"
-          :disabled="busy"
-          class="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-sm text-loss transition hover:bg-loss/10 disabled:opacity-50"
-          @click="onLogout"
-        >
-          <UiAppIcon :icon="Logout02Icon" :size="18" />
-          {{ busy ? 'Signing out…' : 'Log out' }}
-        </button>
-      </div>
     </div>
+
+    <!-- The text stays for screen readers on tablet, where only the icon shows -->
+    <button
+      type="button"
+      title="Log out"
+      :disabled="busy"
+      :aria-busy="busy"
+      class="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-border text-muted transition-colors hover:bg-bg hover:text-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-wait disabled:opacity-60 xl:h-10 xl:bg-surface xl:text-sm xl:font-semibold"
+      @click="onLogout"
+    >
+      <UiAppIcon
+        :icon="Logout02Icon"
+        :size="20"
+        :class="busy ? 'animate-pulse motion-reduce:animate-none' : ''"
+      />
+      <span class="max-xl:sr-only">{{ busy ? 'Signing out…' : 'Log out' }}</span>
+    </button>
   </div>
 </template>

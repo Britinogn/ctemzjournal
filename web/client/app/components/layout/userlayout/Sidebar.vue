@@ -1,34 +1,12 @@
 <script setup lang="ts">
-import {
-  Add01Icon,
-  DashboardSquare02Icon,
-  Settings01Icon,
-  Tag01Icon,
-  Target01Icon,
-  TradeUpIcon,
-  Wallet01Icon,
-} from '~/utils/icons'
+import { Add01Icon } from '~/utils/icons'
 import type { Profile } from '~/types'
 
 defineProps<{ profile: Profile | null }>()
 
 const route = useRoute()
-
-// "group" only controls where the dividers go: daily use, the lists you manage, then settings.
-const nav = [
-  { label: 'Dashboard', to: '/dashboard', icon: DashboardSquare02Icon, exact: true, group: 0 },
-  { label: 'Trades', to: '/dashboard/trades', icon: TradeUpIcon, exact: false, group: 0 },
-  { label: 'Accounts', to: '/dashboard/accounts', icon: Wallet01Icon, exact: false, group: 1 },
-  { label: 'Setups', to: '/dashboard/setups', icon: Target01Icon, exact: false, group: 1 },
-  { label: 'Tags', to: '/dashboard/tags', icon: Tag01Icon, exact: false, group: 1 },
-  { label: 'Settings', to: '/dashboard/settings', icon: Settings01Icon, exact: false, group: 2 },
-]
-
-function isActive(item: { to: string, exact: boolean }): boolean {
-  if (item.exact)
-    return route.path === item.to
-  return route.path === item.to || route.path.startsWith(`${item.to}/`)
-}
+// One shared list for the sidebar and the top bar (see useUserNav.ts).
+const { nav, isActive } = useUserNav()
 
 const isAdminRoute = computed(() => route.path.startsWith('/admin'))
 
@@ -38,7 +16,8 @@ const focusRing
 
 <template>
   <aside class="fixed inset-y-0 left-0 z-30 hidden w-20 flex-col border-r border-border bg-surface md:flex xl:w-64" aria-label="Sidebar">
-    <div class="flex h-16 items-center justify-center px-3 xl:justify-start xl:px-5">
+    <!-- Same height as the top bar, with a bottom border, so the two lines join up -->
+    <div class="flex h-16 items-center justify-center border-b border-border px-3 xl:justify-start xl:px-5">
       <NuxtLink to="/dashboard" class="flex items-center rounded-lg" :class="focusRing">
         <BrandLogo :show-name="false" :size="34" />
         <!-- max-xl:sr-only keeps the name for screen readers when the sidebar is the icon rail -->
@@ -47,7 +26,7 @@ const focusRing
     </div>
 
     <!-- Role badge: static "Trader" for traders, Trader/Admin switcher for admins -->
-    <div class="px-3 xl:px-4">
+    <div class="mt-4 px-3 xl:px-4">
       <div class="grid grid-cols-1 gap-1 rounded-2xl border border-border bg-bg p-1">
         <NuxtLink
           to="/dashboard"
@@ -65,7 +44,7 @@ const focusRing
 
     <nav class="mt-4 flex-1 space-y-1 overflow-y-auto px-3 xl:px-4" aria-label="Primary">
       <template v-for="(item, i) in nav" :key="item.to">
-        <div v-if="i > 0 && nav[i - 1]!.group !== item.group" class="!my-3 border-t border-border" aria-hidden="true" />
+        <div v-if="i > 0 && nav[i - 1]!.group !== item.group" class="my-3! border-t border-border" aria-hidden="true" />
         <NuxtLink
           :to="item.to"
           :title="item.label"
@@ -90,7 +69,7 @@ const focusRing
       </template>
     </nav>
 
-    <div class="space-y-3 p-3 xl:p-4">
+    <div class="space-y-3 border-t border-border p-3 xl:border-t-0 xl:p-4">
       <NuxtLink
         to="/dashboard/trades/new"
         title="Log trade"

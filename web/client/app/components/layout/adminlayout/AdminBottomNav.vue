@@ -1,45 +1,30 @@
 <script setup lang="ts">
-import {
-  DashboardSquare02Icon,
-  GlobeIcon,
-  Settings01Icon,
-  ShieldCheckIcon,
-  UsersIcon,
-} from '~/utils/icons'
+const { tabs, isActive } = useAdminNav()
 
-const route = useRoute()
-
-const tabs = [
-  { label: 'Overview', to: '/admin', icon: DashboardSquare02Icon, exact: true },
-  { label: 'Users', to: '/admin/users', icon: UsersIcon, exact: false },
-  { label: 'Journals', to: '/admin/journals', icon: GlobeIcon, exact: false },
-  { label: 'Audit', to: '/admin/audit', icon: ShieldCheckIcon, exact: false },
-  { label: 'Site', to: '/admin/settings', icon: Settings01Icon, exact: false },
-]
-
-function active(tab: { to: string; exact: boolean }): boolean {
-  if (tab.exact)
-    return route.path === tab.to
-  return route.path === tab.to || route.path.startsWith(`${tab.to}/`)
-}
+const focusRing
+  = 'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary'
 </script>
 
 <template>
   <!-- Mobile bottom tabs (tablet and desktop use the admin sidebar). -->
-  <nav class="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-surface/95 backdrop-blur md:hidden" aria-label="Admin">
-    <div class="grid grid-cols-5 px-2 pb-[env(safe-area-inset-bottom)]">
-      <NuxtLink
-        v-for="tab in tabs"
-        :key="tab.to"
-        :to="tab.to"
-        :class="[
-          'flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium transition',
-          active(tab) ? 'text-primary' : 'text-muted',
-        ]"
-      >
-        <UiAppIcon :icon="tab.icon" :size="22" />
-        {{ tab.label }}
-      </NuxtLink>
-    </div>
+  <nav class="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden" aria-label="Admin">
+    <ul class="grid grid-cols-5 px-2">
+      <li v-for="tab in tabs" :key="tab.to">
+        <NuxtLink
+          :to="tab.to"
+          :aria-current="isActive(tab) ? 'page' : undefined"
+          :class="[
+            'relative flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl text-[11px] font-medium transition-colors',
+            focusRing,
+            isActive(tab) ? 'font-semibold text-primary' : 'text-muted',
+          ]"
+        >
+          <!-- Marker on the top edge, so the current tab is not shown by colour alone -->
+          <span v-if="isActive(tab)" class="absolute -top-px h-0.5 w-8 rounded-b-full bg-primary" aria-hidden="true" />
+          <UiAppIcon :icon="tab.icon" :size="22" />
+          {{ tab.short }}
+        </NuxtLink>
+      </li>
+    </ul>
   </nav>
 </template>
