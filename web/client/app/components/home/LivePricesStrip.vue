@@ -48,7 +48,7 @@ const items = computed(() => (rates.value?.rates ?? []).slice(0, 8))
 
     <!-- Loading: same shape as the real grid, so nothing jumps when data arrives -->
     <div v-if="isPending" class="grid grid-cols-2 gap-3 sm:grid-cols-4" aria-hidden="true">
-      <div v-for="i in 8" :key="i" class="h-[74px] animate-pulse rounded-2xl border border-border bg-surface" />
+      <div v-for="i in 8" :key="i" class="h-18.5 animate-pulse rounded-2xl border border-border bg-surface" />
     </div>
 
     <p v-else-if="isError || items.length === 0" class="rounded-2xl border border-border bg-surface p-6 text-center text-sm text-muted">
