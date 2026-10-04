@@ -40,7 +40,7 @@ const underMaintenance = computed(
 
 <template>
   <div class="flex min-h-screen flex-col bg-bg text-text">
-    <HomelayoutPublicNavbar
+    <LayoutHomelayoutPublicNavbar
       :site-name="settings?.site_name"
       :logo-url="settings?.logo_url"
       :allow-signups="settings?.allow_signups ?? true"
@@ -61,7 +61,7 @@ const underMaintenance = computed(
       </NuxtLink>
     </div>
     <slot v-else />
-    <HomelayoutPublicFooter
+    <LayoutHomelayoutPublicFooter
       :site-name="settings?.site_name"
       :tagline="settings?.tagline"
       :footer-text="settings?.footer_text"
