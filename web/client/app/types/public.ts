@@ -32,6 +32,7 @@ export interface PublicJournal {
   /** First image, signed URL. Null when the trade has no images. */
   image_url: string | null;
   date: string;
+  // note: string
 }
 
 export interface Rate {

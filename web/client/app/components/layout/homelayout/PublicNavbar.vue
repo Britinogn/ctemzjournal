@@ -58,7 +58,6 @@ const primaryBtn
   >
     <!-- Three columns so the nav sits in the true centre of the page -->
     <div class="mx-auto grid h-16 w-full max-w-6xl grid-cols-[1fr_auto] items-center gap-3 px-4 md:grid-cols-[1fr_auto_1fr] md:px-6">
-      
       <NuxtLink to="/" class="flex w-fit min-w-0 items-center gap-2.5">
         <BrandLogo :logo-url="logoUrl" :site-name="siteName" :size="32" />
         <span class="truncate text-base font-extrabold tracking-tight text-text">
@@ -86,7 +85,7 @@ const primaryBtn
       </nav>
 
       <div class="flex items-center justify-end gap-2">
-        <ThemeToggle />
+        <LayoutThemeToggle />
 
         <!-- Desktop actions -->
         <div class="hidden items-center gap-1 md:flex">

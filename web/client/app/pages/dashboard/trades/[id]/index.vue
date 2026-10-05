@@ -307,7 +307,7 @@ const skel = 'animate-pulse rounded-2xl border border-border bg-surface'
             <p class="text-xs text-muted">
               Notes
             </p>
-            <p class="mt-1.5 whitespace-pre-wrap break-words text-sm leading-relaxed">
+            <p class="mt-1.5 whitespace-pre-wrap wrap-break-word text-sm leading-relaxed">
               {{ trade.Notes }}
             </p>
           </div>

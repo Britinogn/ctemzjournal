@@ -13,10 +13,13 @@ const props = withDefaults(defineProps<{
   removable?: boolean
   removingId?: string | null
   gridClass?: string
+  /** "contain" shows the whole picture instead of cropping it to fill the tile. */
+  fit?: 'cover' | 'contain'
 }>(), {
   removable: false,
   removingId: null,
   gridClass: 'grid-cols-2',
+  fit: 'cover',
 })
 
 const emit = defineEmits<{ remove: [id: string] }>()
@@ -140,7 +143,8 @@ const roundBtn
           v-if="!broken(img)"
           :src="srcOf(img)"
           alt=""
-          class="aspect-video w-full object-cover transition-opacity group-hover:opacity-90"
+          :class="fit === 'contain' ? 'object-contain' : 'object-cover'"
+          class="aspect-video w-full transition-opacity group-hover:opacity-90"
           loading="lazy"
           decoding="async"
           @error="failed[img.ID] = true"
