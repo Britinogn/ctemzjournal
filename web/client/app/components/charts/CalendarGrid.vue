@@ -16,7 +16,7 @@ const months = computed(() => {
 const cursor = ref('')
 watchEffect(() => {
   if (!cursor.value && months.value.length > 0)
-    cursor.value = months.value[0]
+    cursor.value = months.value[0] ?? ''
 })
 
 function shift(dir: 1 | -1): void {
@@ -29,19 +29,34 @@ function shift(dir: 1 | -1): void {
 const monthDays = computed(() => props.days.filter(d => d.date.startsWith(cursor.value)))
 const monthPnl = computed(() => monthDays.value.reduce((s, d) => s + d.pnl, 0))
 
-const monthLabel = computed(() => {
+/** Parsed year and month from the cursor. Null when the cursor is empty. */
+const cursorParts = computed<{ y: number; m: number } | null>(() => {
   if (!cursor.value)
+    return null
+  const [yStr, mStr] = cursor.value.split('-')
+  const y = Number(yStr)
+  const m = Number(mStr)
+  if (!Number.isFinite(y) || !Number.isFinite(m))
+    return null
+  return { y, m }
+})
+
+const monthLabel = computed(() => {
+  const parts = cursorParts.value
+  if (!parts)
     return ''
-  const [y, m] = cursor.value.split('-').map(Number)
-  return new Date(Date.UTC(y, m - 1, 1)).toLocaleDateString('en-GB', { month: 'long', timeZone: 'UTC' })
+  return new Date(Date.UTC(parts.y, parts.m - 1, 1)).toLocaleDateString('en-GB', {
+    month: 'long',
+    timeZone: 'UTC',
+  })
 })
 
 /** Monday-first offset for the 1st of the cursor month. */
 const leadBlanks = computed(() => {
-  if (!cursor.value)
+  const parts = cursorParts.value
+  if (!parts)
     return 0
-  const [y, m] = cursor.value.split('-').map(Number)
-  return (new Date(Date.UTC(y, m - 1, 1)).getUTCDay() + 6) % 7
+  return (new Date(Date.UTC(parts.y, parts.m - 1, 1)).getUTCDay() + 6) % 7
 })
 
 function cellTone(pnl: number): string {

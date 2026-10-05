@@ -8,6 +8,7 @@ import {
   PointElement,
   Tooltip,
 } from 'chart.js'
+import type { TooltipItem } from 'chart.js'
 import { Line } from 'vue-chartjs'
 import type { EquityPoint } from '~/types'
 
@@ -32,7 +33,10 @@ function cssVar(name: string, fallback: string): string {
 const filtered = computed(() => {
   if (!props.rangeDays || props.points.length === 0)
     return props.points
-  const last = new Date(props.points[props.points.length - 1].date).getTime()
+  const lastPoint = props.points.at(-1)
+  if (!lastPoint)
+    return props.points
+  const last = new Date(lastPoint.date).getTime()
   const cutoff = last - props.rangeDays * 86_400_000
   return props.points.filter(p => new Date(p.date).getTime() >= cutoff)
 })
@@ -63,8 +67,8 @@ const chartOptions = computed(() => ({
     legend: { display: false },
     tooltip: {
       callbacks: {
-        title: (items: Array<{ label?: string }>) => items[0]?.label ?? '',
-        label: (item: { parsed?: { y?: number } }) => `Equity: ${item.parsed?.y ?? 0}`,
+        title: (items: TooltipItem<'line'>[]) => items[0]?.label ?? '',
+        label: (item: TooltipItem<'line'>) => `Equity: ${item.parsed.y ?? 0}`,
       },
     },
   },
