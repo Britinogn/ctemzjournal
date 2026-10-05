@@ -65,8 +65,9 @@ useHead({
     {
       src: 'https://www.sabilytics.com/script.js',
       async: true,
-      'data-site': 'w3hfo4ayyk5a',
+      'data-site': '0cffnjqpm646',
       'data-domain': 'ctemzjournal.onrender.com',
+      // 'strategy'="afterInteractive",
     },
   ],
 })

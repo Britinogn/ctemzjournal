@@ -34,6 +34,16 @@ export default defineNuxtConfig({
         .replace(/^https?:\/\//, '')
         .split('/')[0],
     ].filter((d): d is string => d !== '' && d !== undefined),
+
+    // screens: {
+    //   sm: 640,
+    //   md: 768,
+    //   lg: 1024,
+    //   xl: 1280,
+    //   '2xl': 1536,
+    //   '3xl': 1920,
+    //   '4xl': 2560,
+    // },
   },
 
   // Plain `.dark` class (no suffix) — the design tokens switch on it.

@@ -81,6 +81,7 @@ const underMaintenance = computed(
     <LayoutHomelayoutPublicFooter
       :site-name="settings?.site_name"
       :tagline="settings?.tagline"
+      :contact-email="settings?.contact_email"
       :footer-text="settings?.footer_text"
       :risk-disclaimer="settings?.risk_disclaimer"
       :social-links="settings?.social_links"

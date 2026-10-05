@@ -60,3 +60,6 @@ export { default as Delete02Icon } from '@hugeicons/core-free-icons/Delete02Icon
 export { default as ChartIcon } from '@hugeicons/core-free-icons/ChartIcon'
 export { default as NotebookIcon } from '@hugeicons/core-free-icons/NotebookIcon'
 export { default as InternetIcon   } from '@hugeicons/core-free-icons/InternetIcon'
+
+export { default as Linkedin01Icon } from '@hugeicons/core-free-icons/Linkedin01Icon'
+export { default as TiktokIcon } from '@hugeicons/core-free-icons/TiktokIcon'

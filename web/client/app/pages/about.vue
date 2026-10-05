@@ -58,7 +58,7 @@ const outcomes = [
     goodProcess: true,
     trade: 'EUR/USD, long',
     rules: 'Yes',
-    result: 'Loss 1.0R',
+    result: 'Loss -1.0R',
     winning: false,
     verdict: 'A good decision. You managed risk and executed your setup. The loss was the cost of doing business.',
   },
@@ -217,7 +217,7 @@ const signature = [
     >
       <div class="max-w-2xl">
         <p class="text-xs font-semibold uppercase tracking-wide text-primary">
-          Learn. Practice. Journal. Improve.
+          Learn. Practice. Test. Trade. Journal. Review.
         </p>
         <h2 id="process-title" class="mt-1 text-balance text-2xl font-bold tracking-tight md:text-3xl">
           Becoming a better trader is a process.
@@ -533,7 +533,7 @@ const signature = [
     <section class="mx-auto mt-20 w-full max-w-6xl px-4 md:mt-28 md:px-6" aria-labelledby="hype-title">
       <div class="rounded-3xl border border-border bg-surface p-6 md:p-10">
         <p class="text-xs font-semibold uppercase tracking-wide text-primary">
-          No hype. Just the journey.
+          No hype. Just the work.
         </p>
         <h2 id="hype-title" class="mt-1 max-w-2xl text-balance text-2xl font-bold tracking-tight md:text-3xl">
           There is a lot of noise around forex.
