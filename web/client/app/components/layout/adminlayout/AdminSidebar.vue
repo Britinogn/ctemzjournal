@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Profile } from '~/types'
+import BrandLogo from '../BrandLogo.vue'
 
 defineProps<{ profile: Profile | null }>()
 
@@ -14,9 +15,13 @@ const focusRing
     <!-- Same height as the top bar, with a bottom border, so the two lines join up -->
     <div class="flex h-16 items-center justify-center border-b border-border px-3 xl:justify-start xl:px-5">
       <NuxtLink to="/admin" class="flex items-center rounded-lg" :class="focusRing">
-        <BrandLogo :show-name="false" :size="34" />
+        <!-- <BrandLogo :show-name="false" :size="150" /> -->
+      <BrandLogo
+        :show-name="false"
+        :size="{ base: 64, sm: 96, md: 120, lg: 150 }"
+      />
         <!-- max-xl:sr-only keeps the name for screen readers when the sidebar is the icon rail -->
-        <span class="ml-2 text-lg font-bold tracking-tight max-xl:sr-only">Ctemz Journal</span>
+        <!-- <span class="ml-2 text-lg font-bold tracking-tight max-xl:sr-only">Ctemz Journal</span> -->
       </NuxtLink>
     </div>
 

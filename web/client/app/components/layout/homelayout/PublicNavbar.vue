@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onClickOutside, useEventListener, useWindowScroll } from '@vueuse/core'
 import { Cancel01Icon, Menu01Icon } from '~/utils/icons'
+import BrandLogo from '../BrandLogo.vue';
 
 withDefaults(defineProps<{
   siteName?: string
@@ -59,7 +60,15 @@ const primaryBtn
     <!-- Three columns so the nav sits in the true centre of the page -->
     <div class="mx-auto grid h-16 w-full max-w-6xl grid-cols-[1fr_auto] items-center gap-3 px-4 md:grid-cols-[1fr_auto_1fr] md:px-6">
       <NuxtLink to="/" class="flex w-fit min-w-0 items-center gap-2.5">
-        <BrandLogo :logo-url="logoUrl" :site-name="siteName" :size="32" />
+        <!-- <BrandLogo 
+        :logo-url="logoUrl" 
+        :site-name="siteName" 
+        :size="150" 
+        /> -->
+        <BrandLogo
+          :show-name="false"
+          :size="{ base: 64, sm: 96, md: 120, lg: 150 }"
+        />
         <!-- <span class="truncate text-base font-extrabold tracking-tight text-text">
           {{ siteName }}
         </span> -->

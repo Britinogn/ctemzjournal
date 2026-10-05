@@ -1,0 +1,24 @@
+{
+  "name": "Ctemz Journal",
+  "short_name": "Ctemz Journal",
+  "description": "Journal every forex trade, track your performance, review your setups, and build a record of what you learn from the market.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0E7C86",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/img/web-app-manifest-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/img/web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

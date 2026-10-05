@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useWindowScroll } from '@vueuse/core'
 import type { Profile } from '~/types'
+import BrandLogo from '../BrandLogo.vue'
 
 defineProps<{ profile: Profile | null }>()
 
@@ -45,7 +46,7 @@ const focusRing
         to="/dashboard"
         :class="['-ml-1 flex min-h-11 min-w-0 items-center rounded-lg px-1 md:hidden', focusRing]"
       >
-        <BrandLogo :size="28" />
+        <BrandLogo :size="150" />
       </NuxtLink>
 
       <!-- Not an h1: each page keeps its own heading -->
@@ -57,7 +58,14 @@ const focusRing
         {{ current.label }}
       </p>
 
-      <div class="ml-auto flex shrink-0 items-center">
+      <div class="ml-auto flex shrink-0 items-center gap-2">
+        <NuxtLink
+          to="/"
+          aria-label="Home"
+          :class="['rounded text-sm font-medium text-muted transition-colors hover:text-text', focusRing]"
+        >
+          <UiAppIcon :icon="InternetIcon" :size="22" aria-hidden="true" />
+        </NuxtLink>
         <LayoutUserlayoutUserMenu :profile="profile" placement="down" />
       </div>
     </div>

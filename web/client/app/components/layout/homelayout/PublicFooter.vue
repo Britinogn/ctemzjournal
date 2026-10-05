@@ -7,6 +7,7 @@ import {
   TwitterIcon,
   YoutubeIcon,
 } from '~/utils/icons'
+import BrandLogo from '../BrandLogo.vue'
 
 const props = withDefaults(defineProps<{
   siteName?: string;
@@ -43,7 +44,7 @@ const socials = computed(() =>
     <div class="mx-auto w-full max-w-6xl px-4 py-10 md:px-6">
       <div class="grid gap-8 md:grid-cols-3">
         <div>
-          <BrandLogo :site-name="siteName" :size="30" />
+          <BrandLogo :site-name="siteName" :size="150" />
           <p v-if="tagline" class="mt-2 text-sm text-muted">
             {{ tagline }}
           </p>

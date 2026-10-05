@@ -3,122 +3,102 @@ definePageMeta({ layout: 'public' })
 
 const title = 'About | Ctemz Journal'
 const description =
-  'Ctemz Journal is a forex learning and trading journal built for people who want to become better traders through understanding, practice, discipline and honest review.'
+  'A journal for the trader you are becoming. Document your trades, track what you learn, and see your progress over time.'
 useSeoMeta({ title, description, ogTitle: title, ogDescription: description })
+
+/* ---------- 1. Where learning comes from ---------- */
+const sources = [
+  { text: 'Market structure from a course.' },
+  { text: 'Risk management from a book.' },
+  { text: 'Technical analysis from a mentor.' },
+  { text: 'Trading psychology from experience.' },
+  { text: 'Something you discover from studying charts or reviewing one of your own trades.', emphasis: true },
+]
+
+/* ---------- 2. The process ---------- */
+const loop = [
+  { step: 'Learn', body: 'Understand how the market works, how to read price, and what risk actually does to an account.' },
+  { step: 'Practice', body: 'Apply what you have learned before any real money is involved.' },
+  { step: 'Test', body: 'Backtest your ideas against historical data instead of assuming they work.' },
+  { step: 'Trade', body: 'Take trades with defined risk.' },
+  { step: 'Journal', body: 'Record the setup, entry, stop loss, target, risk, result, screenshots and how you felt.' },
+  { step: 'Review', body: 'See which setups work, where you repeat mistakes, and whether you kept your rules.' },
+]
+const activeStep = ref(0)
 
 const activeStepData = computed(
   () => loop[activeStep.value] ?? { step: '', body: '' },
 )
 
-/* ---------- 1. Where it starts ---------- */
-const ladder = [
-  { text: 'It starts with understanding how the market works.' },
-  { text: 'Then learning how to read price.' },
-  { text: 'Then managing risk.' },
-  { text: 'Then testing your ideas.' },
-  { text: 'Then keeping a record of what you actually did.' },
-  { text: 'And most importantly, learning from it.', emphasis: true },
-]
-
-/* ---------- 2. The loop ---------- */
-const loop = [
-  { step: 'Learn', body: 'Understand how the market works, how to read price, and what risk actually does to an account.' },
-  { step: 'Practise', body: 'Apply what you have learned before any real money is involved.' },
-  { step: 'Test', body: 'Backtest your rules against historical data instead of assuming they work.' },
-  { step: 'Journal', body: 'Record the setup, entry, stop, target, risk, result, screenshots and how you felt.' },
-  { step: 'Review', body: 'See which setups work, where you repeat mistakes, and whether you kept your rules.' },
-  { step: 'Improve', body: 'Turn that evidence into a repeatable process you can keep sharpening.' },
-]
-const activeStep = ref(0)
-
-/* ---------- 3. The beginner path ---------- */
-const path = [
-  'Learn the fundamentals of forex',
-  'Understand market structure',
-  'Learn technical analysis',
-  'Understand risk management',
-  'Learn the difference between trading and gambling',
-  'Study trading psychology',
-  'Choose a strategy',
-  'Backtest it',
-  'Practise it',
-  'Journal your results',
-  'Review your mistakes',
-]
-
-/* ---------- 4. What you record / what you get back ---------- */
-const entryFields = [
-  'Setup',
-  'Entry',
-  'Stop loss',
-  'Take profit',
-  'Risk',
-  'Result',
-  'Screenshots',
-  'Emotions',
-  'Mistakes',
-  'Rules followed',
+/* ---------- 3. Your trades tell a story ---------- */
+const questions = [
+  'Why did you take it?',
+  'What did you see?',
+  'What was your setup?',
+  'Where was your stop loss?',
+  'How much were you willing to risk?',
+  'Did the trade follow your rules?',
+  'What were you thinking before entering?',
+  'What happened after the trade?',
+  'What did you learn?',
 ]
 
 const insights = [
-  'Which setups perform best for you',
-  'Where you repeatedly make mistakes',
-  'Whether you are following your trading rules',
-  'How your risk management is performing',
-  'Your win rate',
-  'Your expectancy',
-  'Your drawdown',
-  'Your performance across different pairs and setups',
+  'The setups you trade best',
+  'The mistakes you repeat',
+  'Whether you are following your rules',
+  'How your risk affects your results',
+  'How your expectations compare with what actually happens',
 ]
 
-/* ---------- 5. Process over outcome ---------- */
+/* ---------- 4. Profit is not the whole story ---------- */
 const outcomes = [
   {
-    tag: 'Followed the rules — and lost',
+    tag: 'Followed the rules and lost',
     goodProcess: true,
     trade: 'EUR/USD, long',
     rules: 'Yes',
-    result: '−1.0R',
+    result: 'Loss 1.0R',
     winning: false,
-    verdict: 'A good decision. The loss was the cost of doing business.',
+    verdict: 'A good decision. You managed risk and executed your setup. The loss was the cost of doing business.',
   },
   {
-    tag: 'Broke the rules — and won',
+    tag: 'Broke the rules and won',
     goodProcess: false,
     trade: 'GBP/JPY, long',
-    rules: 'No — stop moved, size doubled',
-    result: '+2.4R',
+    rules: 'No. Stop moved, size doubled',
+    result: 'Win 2.4R',
     winning: true,
-    verdict: 'A bad decision. The market rewarded a mistake.',
+    verdict: 'A bad decision. The market rewarded a mistake. That is not the same as a good trade.',
   },
 ]
 
-/* ---------- 6. Risk comes before profit ---------- */
+/* ---------- 5. Risk comes first ---------- */
 const risk = 20
 const reward = 42
 const rMultiple = (reward / risk).toFixed(1)
 const riskShare = (risk / (risk + reward)) * 100
 
-/* ---------- 7. Psychology ---------- */
+/* ---------- 6. Psychology ---------- */
 const emotions = [
   { name: 'Fear', body: 'can make you close a good trade too early' },
-  { name: 'Greed', body: 'can make you risk more than you planned' },
-  { name: 'FOMO', body: 'can make you enter late' },
+  { name: 'Greed', body: 'can make you take more risk than you planned' },
+  { name: 'FOMO', body: 'can make you enter a trade that was never part of your setup' },
   { name: 'Revenge trading', body: 'can turn one loss into several' },
   { name: 'Overconfidence', body: 'can make a winning streak dangerous' },
 ]
 
-/* ---------- 8. Hype ---------- */
+/* ---------- 7. Hype ---------- */
 const hype = [
+  'Huge profit screenshots',
   'Luxury lifestyles',
-  'Screenshots of huge profits',
-  '“Guaranteed” strategies',
+  'Guaranteed strategies',
   'Signal sellers',
   'Unrealistic win rates',
-  'Accounts showing effortless money',
+  'Promises of effortless money',
 ]
 
-/* ---------- 9. Privacy demo ---------- */
+/* ---------- 8. Privacy demo ---------- */
 type View = 'you' | 'public'
 const view = ref<View>('you')
 
@@ -138,63 +118,75 @@ const announce = computed(() =>
     : 'Showing what other people see. Lot size, profit and notes are hidden.',
 )
 
-/* ---------- 10. A record of your journey ---------- */
+/* ---------- 9. See how far you have come ---------- */
 const changes = [
   'Your understanding will change.',
-  'Your strategy may change.',
+  'Your strategy will evolve.',
   'Your risk management will improve.',
-  'You’ll make mistakes.',
-  'You’ll discover patterns in your behaviour.',
-  'You’ll have good periods and bad periods.',
+  'Your mistakes will change.',
+  'You will have good periods and bad periods.',
+  'There will be times when you question yourself and times when things finally start to make sense.',
 ]
 
-/* ---------- 11. Closing ---------- */
-const closingSteps = [
-  'Learn the market',
-  'Understand your risk',
-  'Test your ideas',
-  'Record your decisions',
-  'Review your results',
-  'Learn from your mistakes',
-  'Repeat',
+/* ---------- 10. Built for the long term ---------- */
+const audience = [
+  'The beginner who is still learning the basics.',
+  'The trader testing their first strategy.',
+  'The trader trying to become more disciplined.',
+  'The trader who wants to stop relying on memory and start relying on evidence.',
+  'Anyone who wants to take their trading development seriously.',
+]
+
+const signature = [
+  'Learn from wherever you choose',
+  'Practice what you learn',
+  'Journal what you do',
+  'Review what happened',
+  'Improve from the evidence',
 ]
 </script>
 
 <template>
   <div class="flex-1 pb-4">
-    <!-- ============ 1. Hero: the promise, and where it starts ============ -->
+    <!-- ============ 1. Hero ============ -->
     <header
       class="mx-auto grid w-full max-w-6xl items-center gap-10 px-4 pt-12 md:px-6 md:pt-20 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-14"
     >
       <div>
         <p class="text-xs font-semibold uppercase tracking-wide text-primary">About Ctemz Journal</p>
         <h1 class="mt-2 text-balance text-4xl font-extrabold leading-[1.06] tracking-tight md:text-5xl">
-          Trading should be learned, not guessed.
+          A journal for the trader you are becoming.
         </h1>
         <div class="mt-5 max-w-xl space-y-3 text-pretty text-base leading-relaxed text-muted md:text-lg">
           <p>
-            Ctemz Journal is a forex learning and trading journal built for people who want to become
-            better traders through understanding, practice, discipline and honest review.
+            Forex trading is not something you master by finding one perfect strategy, copying someone
+            else's trades, or watching enough videos to feel ready.
           </p>
           <p>
-            Becoming a trader is more than finding an entry, placing a trade and hoping the market moves
-            your way. It is a skill — and skills are built in steps, not in a single lucky week.
+            You learn by studying the market, testing what you learn, making decisions, taking trades,
+            reviewing those decisions, and doing it again.
           </p>
+          <p>That is what Ctemz Journal is built around.</p>
         </div>
       </div>
 
       <aside
         class="rounded-2xl border border-border bg-surface p-5 shadow-xl md:p-6"
-        aria-label="Where the journey starts"
+        aria-label="Where learning comes from"
       >
-        <ol>
+        <p class="text-sm leading-relaxed text-muted">
+          Ctemz Journal is a personal space for traders to document their journey, keep track of what
+          they are learning, record their trades, and look back at their progress over time.
+        </p>
+
+        <ol class="mt-5">
           <li
-            v-for="(s, i) in ladder"
+            v-for="(s, i) in sources"
             :key="s.text"
             class="relative flex gap-4 pb-5 last:pb-0"
           >
             <span
-              v-if="i < ladder.length - 1"
+              v-if="i < sources.length - 1"
               class="absolute bottom-0 left-2.75 top-7 w-px bg-border"
               aria-hidden="true"
             />
@@ -211,33 +203,29 @@ const closingSteps = [
             </p>
           </li>
         </ol>
+
+        <p class="mt-5 border-t border-border pt-5 text-sm font-semibold leading-relaxed text-text">
+          You don't learn from Ctemz Journal. You keep a journal of what you learn.
+        </p>
       </aside>
     </header>
 
-    <!-- ============ 2. Start with understanding ============ -->
+    <!-- ============ 2. The process ============ -->
     <section
       class="mx-auto mt-20 w-full max-w-6xl px-4 md:mt-28 md:px-6"
-      aria-labelledby="understanding-title"
+      aria-labelledby="process-title"
     >
       <div class="max-w-2xl">
-        <p class="text-xs font-semibold uppercase tracking-wide text-primary">Start with understanding</p>
-        <h2 id="understanding-title" class="mt-1 text-balance text-2xl font-bold tracking-tight md:text-3xl">
-          Forex can look complicated when you're just getting started.
+        <p class="text-xs font-semibold uppercase tracking-wide text-primary">
+          Learn. Practice. Journal. Improve.
+        </p>
+        <h2 id="process-title" class="mt-1 text-balance text-2xl font-bold tracking-tight md:text-3xl">
+          Becoming a better trader is a process.
         </h2>
-        <div class="mt-4 space-y-3 text-pretty text-base leading-relaxed text-muted">
-          <p>
-            Charts are moving. Candles are forming. People are talking about market structure,
-            liquidity, support and resistance, risk to reward, strategies, indicators, psychology and
-            countless other concepts.
-          </p>
-          <p>It is easy to consume information without actually understanding it.</p>
-          <p>Ctemz Journal is built around a simpler approach.</p>
-        </div>
       </div>
 
-      <!-- The loop, made tangible -->
       <div class="mt-8 rounded-3xl border border-border bg-surface p-4 md:p-6">
-        <div class="flex flex-wrap items-center gap-2" role="group" aria-label="The learning loop">
+        <div class="flex flex-wrap items-center gap-2" role="group" aria-label="The trading process">
           <button
             v-for="(s, i) in loop"
             :key="s.step"
@@ -270,82 +258,51 @@ const closingSteps = [
       </div>
 
       <p class="mt-6 max-w-2xl text-pretty text-base font-medium leading-relaxed">
-        You don't need to know everything on day one. You need a clear path to keep learning.
+        Over time, your journal becomes more than a collection of trades. It becomes evidence of how you
+        think, how you trade, where you improve, and where you keep making the same mistakes.
       </p>
     </section>
 
-    <!-- ============ 3. Built for the beginner journey ============ -->
+    <!-- ============ 3. Your trades tell a story ============ -->
     <section
       class="mx-auto mt-20 w-full max-w-6xl px-4 md:mt-28 md:px-6"
-      aria-labelledby="beginner-title"
+      aria-labelledby="story-title"
     >
-      <p class="text-xs font-semibold uppercase tracking-wide text-primary">Built for the beginner journey</p>
-      <h2 id="beginner-title" class="mt-1 max-w-2xl text-balance text-2xl font-bold tracking-tight md:text-3xl">
-        Your first goal should be understanding.
-      </h2>
-      <p class="mt-3 max-w-2xl text-pretty text-base leading-relaxed text-muted">
-        Ctemz Journal isn't designed around the idea that you should immediately start risking real
-        money. These are the steps, in order.
-      </p>
-
-      <ol class="mt-8 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-        <li
-          v-for="(p, i) in path"
-          :key="p"
-          class="flex items-start gap-3 rounded-xl border border-border bg-surface px-4 py-3"
-        >
-          <span
-            class="tnum mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-bg text-xs font-bold text-muted"
-          >
-            {{ i + 1 }}
-          </span>
-          <span class="text-sm font-medium leading-snug">{{ p }}</span>
-        </li>
-      </ol>
-
-      <div class="mt-8 max-w-2xl space-y-3 border-l-2 border-primary pl-5 text-pretty leading-relaxed">
-        <p class="text-muted">
-          Then, when you have enough understanding and experience, decide whether you're ready to trade
-          real money.
-        </p>
-        <p class="font-semibold">
-          The goal isn't to rush you into the market. The goal is to help you become prepared for it.
-        </p>
-      </div>
-    </section>
-
-    <!-- ============ 4. Your journal is part of the learning process ============ -->
-    <section
-      class="mx-auto mt-20 w-full max-w-6xl px-4 md:mt-28 md:px-6"
-      aria-labelledby="journal-title"
-    >
-      <p class="text-xs font-semibold uppercase tracking-wide text-primary">
-        Your journal is part of the learning process
-      </p>
-      <h2 id="journal-title" class="mt-1 max-w-2xl text-balance text-2xl font-bold tracking-tight md:text-3xl">
-        A journal shouldn't just tell you whether you made or lost money. It should help you understand
-        why.
+      <p class="text-xs font-semibold uppercase tracking-wide text-primary">Your trades tell a story</p>
+      <h2 id="story-title" class="mt-1 max-w-2xl text-balance text-2xl font-bold tracking-tight md:text-3xl">
+        A trade is more than an entry and an exit.
       </h2>
 
       <div class="mt-8 grid gap-4 lg:grid-cols-2 lg:gap-6">
         <div class="rounded-3xl border border-border bg-surface p-5 md:p-6">
-          <h3 class="text-xs font-semibold uppercase tracking-wide text-muted">What you record</h3>
-          <ul class="mt-4 flex flex-wrap gap-2">
+          <h3 class="text-xs font-semibold uppercase tracking-wide text-muted">
+            Ask yourself after every trade
+          </h3>
+          <ul class="mt-4 space-y-2.5">
             <li
-              v-for="f in entryFields"
-              :key="f"
-              class="rounded-full border border-border bg-bg px-3 py-1.5 text-sm font-medium"
+              v-for="q in questions"
+              :key="q"
+              class="flex items-start gap-3 text-sm"
             >
-              {{ f }}
+              <span
+                class="mt-2 h-1 w-1 shrink-0 rounded-full bg-primary"
+                aria-hidden="true"
+              />
+              <span class="leading-snug">{{ q }}</span>
             </li>
           </ul>
-          <p class="mt-5 text-sm leading-relaxed text-muted">
-            Over time, your journal becomes a record of your development — not a memory test.
-          </p>
         </div>
 
         <div class="rounded-3xl border border-border bg-surface p-5 md:p-6">
-          <h3 class="text-xs font-semibold uppercase tracking-wide text-muted">What you get back</h3>
+          <h3 class="text-xs font-semibold uppercase tracking-wide text-muted">
+            What the record gives you
+          </h3>
+          <p class="mt-4 text-sm leading-relaxed text-muted">
+            Recording these things gives you something that memory cannot. A record.
+          </p>
+          <p class="mt-4 text-sm leading-relaxed text-muted">
+            Instead of looking back and saying, “I think I have improved,” you can actually see it.
+          </p>
           <ul class="mt-4 space-y-2.5">
             <li v-for="i in insights" :key="i" class="flex items-start gap-3 text-sm">
               <svg
@@ -365,20 +322,18 @@ const closingSteps = [
           </ul>
         </div>
       </div>
-
-      <p class="mt-6 text-base font-semibold">Instead of relying on memory or feelings, you have evidence.</p>
     </section>
 
-    <!-- ============ 5. Don't confuse winning with good trading ============ -->
+    <!-- ============ 4. Profit is not the whole story ============ -->
     <section
       class="mx-auto mt-20 w-full max-w-6xl px-4 md:mt-28 md:px-6"
-      aria-labelledby="process-title"
+      aria-labelledby="outcome-title"
     >
       <p class="text-xs font-semibold uppercase tracking-wide text-primary">
-        Don't confuse winning with good trading
+        Profit is not the whole story
       </p>
-      <h2 id="process-title" class="mt-1 max-w-2xl text-balance text-2xl font-bold tracking-tight md:text-3xl">
-        The result of a trade is not the same thing as the quality of the decision.
+      <h2 id="outcome-title" class="mt-1 max-w-2xl text-balance text-2xl font-bold tracking-tight md:text-3xl">
+        A winning trade is not automatically a good trade. A losing trade is not automatically a bad trade.
       </h2>
 
       <div class="mt-8 grid gap-4 md:grid-cols-2 md:gap-6">
@@ -411,7 +366,7 @@ const closingSteps = [
               class="tnum rounded-full px-2.5 py-0.5 text-sm font-semibold"
               :class="o.winning ? 'bg-profit/10 text-profit-text' : 'bg-border text-text'"
             >
-              <span v-if="o.winning" aria-hidden="true">↑ </span>{{ o.result }}
+              {{ o.result }}
             </span>
           </div>
 
@@ -425,13 +380,14 @@ const closingSteps = [
       </div>
 
       <p class="mt-6 max-w-2xl text-pretty leading-relaxed text-muted">
-        You can follow your strategy perfectly and lose. You can break your rules and still win. That's
-        why Ctemz Journal focuses on the process behind every trade, not just the final result — the
-        objective is a repeatable process you can evaluate and improve over time.
+        The goal is to help you understand the decisions behind your results. If you followed your plan,
+        managed your risk correctly, and executed your setup properly, a losing trade can still be a
+        good trade. If you ignored your rules and somehow made money, that does not make the decision
+        good. The journal helps you separate the outcome from the process.
       </p>
     </section>
 
-    <!-- ============ 6. Risk comes before profit ============ -->
+    <!-- ============ 5. Risk comes first ============ -->
     <section
       class="mx-auto mt-20 w-full max-w-6xl px-4 md:mt-28 md:px-6"
       aria-labelledby="risk-title"
@@ -440,31 +396,31 @@ const closingSteps = [
         class="grid gap-8 rounded-3xl border border-border bg-surface p-6 md:p-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:gap-14"
       >
         <div>
-          <p class="text-xs font-semibold uppercase tracking-wide text-primary">Risk comes before profit</p>
+          <p class="text-xs font-semibold uppercase tracking-wide text-primary">Risk comes first</p>
           <h2 id="risk-title" class="mt-1 text-balance text-2xl font-bold tracking-tight md:text-3xl">
-            The second question matters more than the first.
+            Before asking how much you can make, understand how much you can lose.
           </h2>
           <div class="mt-4 space-y-3 text-pretty leading-relaxed text-muted">
-            <p>The question shouldn't always be: “How much can I make?”</p>
-            <p>It should also be: “How much can I lose if I'm wrong?”</p>
+            <p>Trading is about managing risk before chasing returns.</p>
             <p>
-              Ctemz Journal helps you think about every trade in terms of risk, R multiple, reward and
-              overall performance — because protecting your capital gives you something even more
-              valuable: the ability to keep learning.
+              Ctemz Journal gives you a place to record the risk behind your trades, understand your
+              reward relative to that risk, and see how your decisions affect your overall performance.
+            </p>
+            <p>
+              Staying in the market long enough to learn is more important than trying to get rich from
+              one trade.
             </p>
           </div>
         </div>
 
         <figure class="self-center" aria-label="A trade that risked 20 pips and made 42 pips">
           <div class="relative pb-14 pt-9">
-            <!-- Labels above the markers -->
             <div class="tnum absolute inset-x-0 top-0 text-xs text-muted">
               <span class="absolute left-0">Stop 1.08320</span>
               <span class="absolute -translate-x-1/2" :style="{ left: riskShare + '%' }">Entry 1.08520</span>
               <span class="absolute right-0">Exit 1.08940</span>
             </div>
 
-            <!-- Risk and reward drawn to scale -->
             <div class="flex h-3.5 w-full overflow-hidden rounded-full">
               <div class="bg-border" :style="{ width: riskShare + '%' }" />
               <div class="bg-primary" :style="{ width: 100 - riskShare + '%' }" />
@@ -475,7 +431,6 @@ const closingSteps = [
               aria-hidden="true"
             />
 
-            <!-- Distances below -->
             <div class="tnum absolute inset-x-0 bottom-0 flex text-sm font-semibold">
               <span class="text-muted" :style="{ width: riskShare + '%' }">Risk {{ risk }} pips</span>
               <span class="text-primary" :style="{ width: 100 - riskShare + '%' }">
@@ -489,27 +444,29 @@ const closingSteps = [
             <span
               class="tnum inline-flex items-center gap-1 rounded-full bg-profit/10 px-2.5 py-0.5 font-semibold text-profit-text"
             >
-              <span aria-hidden="true">↑</span> Win +{{ rMultiple }}R
+              Win +{{ rMultiple }}R
             </span>
           </figcaption>
         </figure>
       </div>
     </section>
 
-    <!-- ============ 7. Backtest before you believe ============ -->
+    <!-- ============ 6. Test your ideas ============ -->
     <section
       class="mx-auto mt-20 w-full max-w-6xl px-4 md:mt-28 md:px-6"
-      aria-labelledby="backtest-title"
+      aria-labelledby="test-title"
     >
-      <p class="text-xs font-semibold uppercase tracking-wide text-primary">Backtest before you believe</p>
-      <h2 id="backtest-title" class="mt-1 max-w-2xl text-balance text-2xl font-bold tracking-tight md:text-3xl">
-        A strategy can sound perfect when someone explains it online. That doesn't mean it works for you.
+      <p class="text-xs font-semibold uppercase tracking-wide text-primary">Test your ideas</p>
+      <h2 id="test-title" class="mt-1 max-w-2xl text-balance text-2xl font-bold tracking-tight md:text-3xl">
+        A strategy does not become yours because someone on the internet says it works.
       </h2>
 
       <div class="mt-8 grid items-stretch gap-4 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:gap-6">
         <div class="rounded-3xl border border-border bg-bg p-5 md:p-6">
           <p class="text-xs font-semibold uppercase tracking-wide text-muted">Before</p>
-          <p class="mt-3 text-lg font-semibold italic text-muted">“I think this strategy works.”</p>
+          <p class="mt-3 text-lg font-semibold italic text-muted">
+            “I think this strategy works.”
+          </p>
         </div>
 
         <div class="grid place-items-center text-muted" aria-hidden="true">
@@ -529,30 +486,30 @@ const closingSteps = [
         <div class="rounded-3xl border border-primary/30 bg-primary/5 p-5 md:p-6">
           <p class="text-xs font-semibold uppercase tracking-wide text-primary">After</p>
           <p class="mt-3 text-lg font-semibold">
-            “What happened when these rules were actually followed?”
+            “What happened when I tested these rules myself?”
           </p>
         </div>
       </div>
 
       <p class="mt-6 max-w-2xl text-pretty leading-relaxed text-muted">
-        Backtesting gives you a way to take a strategy and test its rules against historical market data.
-        It doesn't guarantee future results — but it helps you understand your strategy, identify its
-        weaknesses, and build a stronger foundation before putting real money at risk.
+        Backtest it. Study it. Understand its conditions. See where it works and where it does not.
+        Then decide whether it deserves a place in your trading plan. Ctemz Journal gives you somewhere
+        to keep that process documented. Your journal can become a record of the ideas you tested, the
+        strategies you practiced, and the evidence you collected along the way.
       </p>
     </section>
 
-    <!-- ============ 8. Your psychology matters ============ -->
+    <!-- ============ 7. The psychological side matters too ============ -->
     <section
       class="mx-auto mt-20 w-full max-w-6xl px-4 md:mt-28 md:px-6"
       aria-labelledby="psychology-title"
     >
-      <p class="text-xs font-semibold uppercase tracking-wide text-primary">Your psychology matters</p>
-      <h2 id="psychology-title" class="mt-1 max-w-2xl text-balance text-2xl font-bold tracking-tight md:text-3xl">
-        Trading isn't only about charts.
-      </h2>
-      <p class="mt-3 max-w-2xl leading-relaxed text-muted">
-        Your decisions are affected by your emotions.
+      <p class="text-xs font-semibold uppercase tracking-wide text-primary">
+        The psychological side matters too
       </p>
+      <h2 id="psychology-title" class="mt-1 max-w-2xl text-balance text-2xl font-bold tracking-tight md:text-3xl">
+        Trading is not only about charts.
+      </h2>
 
       <ul class="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <li
@@ -566,17 +523,20 @@ const closingSteps = [
       </ul>
 
       <p class="mt-6 max-w-2xl text-pretty leading-relaxed text-muted">
-        Ctemz Journal gives you a place to record those behaviours instead of ignoring them — because
-        becoming a better trader also means becoming better at managing yourself.
+        These behaviors are difficult to see when you only look at your account balance. Writing them
+        down makes them easier to recognize. The more honestly you journal, the easier it becomes to
+        identify the behavior behind your decisions.
       </p>
     </section>
 
-    <!-- ============ 9. Ignore the hype ============ -->
+    <!-- ============ 8. No hype ============ -->
     <section class="mx-auto mt-20 w-full max-w-6xl px-4 md:mt-28 md:px-6" aria-labelledby="hype-title">
       <div class="rounded-3xl border border-border bg-surface p-6 md:p-10">
-        <p class="text-xs font-semibold uppercase tracking-wide text-primary">Ignore the hype</p>
+        <p class="text-xs font-semibold uppercase tracking-wide text-primary">
+          No hype. Just the journey.
+        </p>
         <h2 id="hype-title" class="mt-1 max-w-2xl text-balance text-2xl font-bold tracking-tight md:text-3xl">
-          Forex is surrounded by a lot of noise.
+          There is a lot of noise around forex.
         </h2>
 
         <ul class="mt-6 flex flex-wrap gap-2">
@@ -591,12 +551,13 @@ const closingSteps = [
 
         <div class="mt-8 grid gap-6 border-t border-border pt-8 md:grid-cols-2 md:gap-10">
           <div class="space-y-3 text-pretty leading-relaxed text-muted">
-            <p>Ctemz Journal isn't built around that.</p>
-            <p>We don't believe trading should be sold as a shortcut to wealth.</p>
+            <p>Ctemz Journal is not built around any of that.</p>
+            <p>It is built around the work.</p>
             <p>
-              We believe it should be approached as a skill that requires education, practice, discipline,
-              risk management and continuous improvement.
+              Study the market. Practice. Take calculated risks. Make mistakes. Record them. Review
+              them. Improve. Repeat.
             </p>
+            <p>There is no shortcut that can replace experience and disciplined practice.</p>
           </div>
           <p class="self-center text-balance text-3xl font-extrabold leading-tight tracking-tight md:text-4xl">
             No hype. Just the work.
@@ -605,24 +566,32 @@ const closingSteps = [
       </div>
     </section>
 
-    <!-- ============ 10. Private by default (interactive) ============ -->
+    <!-- ============ 9. Your journal belongs to you ============ -->
     <section
       class="mx-auto mt-20 w-full max-w-6xl px-4 md:mt-28 md:px-6"
       aria-labelledby="privacy-title"
     >
       <div class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-14">
         <div>
-          <p class="text-xs font-semibold uppercase tracking-wide text-primary">Private by default</p>
+          <p class="text-xs font-semibold uppercase tracking-wide text-primary">
+            Your journal belongs to you
+          </p>
           <h2 id="privacy-title" class="mt-1 text-balance text-2xl font-bold tracking-tight md:text-3xl">
-            Your journal is personal.
+            Your trading journey is personal.
           </h2>
           <div class="mt-4 space-y-3 text-pretty leading-relaxed text-muted">
-            <p>Your trades, notes, mistakes, performance and account information belong to you.</p>
             <p>
-              Ctemz Journal is designed with privacy in mind, while giving you the option to share
-              selected journal entries when you choose.
+              Your trades, notes, mistakes, strategies, results, and observations belong to you. That
+              is why Ctemz Journal is private by default.
             </p>
-            <p class="font-semibold text-text">Sharing should be intentional. Not automatic.</p>
+            <p>
+              You decide what you want to keep to yourself and what you want to share. Your journal
+              should be a place where you can be completely honest about your trading, including the
+              decisions you would rather forget.
+            </p>
+            <p class="font-semibold text-text">
+              Because those decisions may be the ones that teach you the most.
+            </p>
           </div>
           <p class="mt-5 max-w-xl text-sm leading-relaxed text-muted">
             Try the switch to see exactly what another person gets.
@@ -692,7 +661,6 @@ const closingSteps = [
             </button>
           </div>
 
-          <!-- The chart is shared, so it is always visible -->
           <div class="overflow-hidden rounded-xl border border-border bg-bg">
             <svg viewBox="0 0 120 40" class="h-28 w-full" preserveAspectRatio="none" aria-hidden="true">
               <path
@@ -745,7 +713,7 @@ const closingSteps = [
                       r.win ? 'rounded-full bg-profit/10 px-2.5 py-0.5 text-profit-text' : ''
                     "
                   >
-                    <template v-if="r.win"><span aria-hidden="true">↑ </span>Win </template>{{ r.value }}
+                    {{ r.value }}
                   </span>
                   <span v-else :key="`m-${r.label}`" class="inline-flex items-center justify-end">
                     <span class="block h-3 rounded bg-border" :class="r.mask" aria-hidden="true" />
@@ -769,7 +737,7 @@ const closingSteps = [
       </div>
     </section>
 
-    <!-- ============ 11. A record of your journey ============ -->
+    <!-- ============ 10. See how far you have come ============ -->
     <section
       class="mx-auto mt-20 w-full max-w-6xl px-4 md:mt-28 md:px-6"
       aria-labelledby="journey-title"
@@ -777,18 +745,18 @@ const closingSteps = [
       <div class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-14">
         <div>
           <p class="text-xs font-semibold uppercase tracking-wide text-primary">
-            A record of your journey
+            See how far you have come
           </p>
           <h2 id="journey-title" class="mt-1 text-balance text-2xl font-bold tracking-tight md:text-3xl">
-            Your first trade won't look like your hundredth.
+            Your first trade will not look like your hundredth.
           </h2>
           <div class="mt-4 space-y-3 text-pretty leading-relaxed text-muted">
             <p>
-              That's part of learning — and it's the part most traders only remember through
-              rose-tinted hindsight.
+              Without a record, much of that disappears into memory. With a journal, you can look back
+              and see the journey.
             </p>
             <p class="font-semibold text-text">
-              Ctemz Journal exists so you can actually see that progression. Not just remember it.
+              Not just how much money you made or lost, but how you became a different trader.
             </p>
           </div>
         </div>
@@ -806,32 +774,52 @@ const closingSteps = [
       </div>
     </section>
 
-    <!-- ============ 12. Closing ============ -->
+    <!-- ============ 11. Built for the long term ============ -->
     <section class="mx-auto mt-20 w-full max-w-6xl px-4 md:mt-28 md:px-6">
       <div class="rounded-3xl border border-border bg-surface p-6 text-center md:p-12">
+        <p class="text-xs font-semibold uppercase tracking-wide text-primary">Built for the long term</p>
         <h2
-          class="mx-auto max-w-2xl text-balance text-3xl font-extrabold leading-tight tracking-tight md:text-4xl"
+          class="mx-auto mt-2 max-w-3xl text-balance text-2xl font-extrabold leading-tight tracking-tight md:text-3xl"
         >
-          Trade less emotionally. Learn more deliberately.
+          Ctemz Journal is for traders who understand that becoming good at trading takes time.
         </h2>
-        <p class="mx-auto mt-4 max-w-xl text-pretty leading-relaxed text-muted">
-          You don't need to become a profitable trader overnight. You need to become a more informed
-          trader than you were yesterday.
-        </p>
 
         <ul class="mx-auto mt-8 flex max-w-3xl flex-wrap justify-center gap-2">
           <li
-            v-for="s in closingSteps"
-            :key="s"
+            v-for="a in audience"
+            :key="a"
             class="rounded-full border border-border bg-bg px-3.5 py-1.5 text-sm font-medium"
+          >
+            {{ a }}
+          </li>
+        </ul>
+
+        <div class="mx-auto mt-8 max-w-xl space-y-3 text-pretty text-sm leading-relaxed text-muted">
+          <p>
+            Ctemz Journal does not promise profitable trades or a winning strategy.
+            It does not claim that journaling alone will make you a successful trader.
+          </p>
+          <p class="text-base font-semibold text-text">
+            It gives you something more fundamental. A place to document the work.
+          </p>
+          <p>
+            Because you cannot improve what you never review. And you cannot review what you never
+            record.
+          </p>
+        </div>
+
+        <ul class="mx-auto mt-8 flex max-w-3xl flex-wrap justify-center gap-2">
+          <li
+            v-for="s in signature"
+            :key="s"
+            class="rounded-full border border-primary/30 bg-primary/5 px-3.5 py-1.5 text-sm font-medium text-primary"
           >
             {{ s }}
           </li>
         </ul>
 
-        <p class="mt-8 text-sm text-muted">Ctemz Journal is built for that journey.</p>
-        <p class="mt-2 text-sm font-semibold uppercase tracking-wide text-primary">
-          Learn. Practice. Journal. Improve.
+        <p class="mt-6 text-sm font-semibold uppercase tracking-wide text-primary">
+          That is Ctemz Journal.
         </p>
       </div>
     </section>

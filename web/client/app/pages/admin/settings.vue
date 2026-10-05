@@ -98,7 +98,7 @@ async function onSave(): Promise<void> {
       allow_signups: form.allow_signups,
       maintenance_mode: form.maintenance_mode,
     }
-    const updated = await api.patch<SiteSettingRow>('/admin/site-settings', body)
+    const updated = await api.patch<SiteSettingRow>('/admin/site-settings', {...body})
     queryClient.setQueryData(['admin', 'site-settings'], updated)
     queryClient.invalidateQueries({ queryKey: siteSettingsKey() })
     toast.success('Settings saved — home page and header update')
@@ -131,12 +131,14 @@ const labelCls = 'mb-1.5 block text-sm font-medium'
       <section class="rounded-2xl border border-border bg-surface p-4 md:p-6" aria-label="Brand">
         <h2 class="text-sm font-semibold">Brand</h2>
         <div class="mt-3 flex items-center gap-4">
-          <NuxtImg
-            :src="form.logo_path ? assetUrl(form.logo_path) : '/logo.svg'"
-            alt="Site logo"
-            width="64" height="64"
-            class="h-16 w-16 rounded-2xl border border-border object-contain"
-          />
+          <span class="inline-flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl border border-border">
+            <BrandLogo
+              :logo-url="form.logo_path ? assetUrl(form.logo_path) : null"
+              :show-name="false"
+              :size="56"
+              site-name="Site logo"
+            />
+          </span>
           <div>
             <label class="inline-block cursor-pointer rounded-xl border border-border px-4 py-2 text-sm font-semibold transition hover:border-primary">
               <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" class="sr-only" @change="uploadLogo">

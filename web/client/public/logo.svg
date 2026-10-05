@@ -1,1 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#0E7C86"/><path d="M14 44 L27 29 L35 37 L50 20" stroke="#FFFFFF" stroke-width="5.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M40 20 H50 V30" stroke="#FFFFFF" stroke-width="5.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="104" viewBox="0 0 480 104">
+  <g transform="scale(1.625)">
+    <rect width="64" height="64" rx="15" fill="#0F8F9A"/>
+    <path d="M39.5 22.4A15 15 0 1 0 39.5 41.6" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round"/>
+    <line x1="50" y1="17" x2="50" y2="47" stroke="#86EFAC" stroke-width="3" stroke-linecap="round"/>
+    <rect x="46.5" y="25" width="7" height="14" rx="1.5" fill="#86EFAC"/>
+  </g>
+  <text x="126" y="68" font-family="Sora, 'Segoe UI', system-ui, sans-serif" font-size="50" letter-spacing="-1">
+    <tspan font-weight="700" fill="#0F8F9A">Ctemz</tspan><tspan font-weight="400" fill="#64748B"> Journal</tspan>
+  </text>
+</svg>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useWindowScroll } from '@vueuse/core'
 import type { Profile } from '~/types'
+import BrandLogo from '../BrandLogo.vue'
 
 defineProps<{ profile: Profile | null }>()
 
@@ -45,14 +46,14 @@ const focusRing
           to="/admin"
           :class="['-ml-1 flex min-h-11 min-w-0 items-center rounded-lg px-1 md:hidden', focusRing]"
         >
-          <BrandLogo :size="28" />
+          <BrandLogo :size="150" />
         </NuxtLink>
-        <span class="inline-flex shrink-0 items-center gap-1 rounded-full bg-warning/10 px-2.5 py-1 text-xs font-semibold text-warning-text md:hidden">
+        <!-- <span class="inline-flex shrink-0 items-center gap-1 rounded-full bg-warning/10 px-2.5 py-1 text-xs font-semibold text-warning-text md:hidden">
           <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3z" />
           </svg>
           Admin
-        </span>
+        </span> -->
       </template>
 
       <!-- Phone, below a section: the section name next to the back button -->
@@ -83,6 +84,9 @@ const focusRing
       </nav>
 
       <div class="ml-auto flex shrink-0 items-center gap-2">
+        <NuxtLink to="/" aria-label="Home" :class="['rounded text-sm font-medium text-muted transition-colors hover:text-text', focusRing]">
+          <UiAppIcon :icon="InternetIcon" :size="22" aria-hidden="true" />
+        </NuxtLink>
         <ThemeToggle />
         <LayoutUserlayoutUserMenu :profile="profile" placement="down" />
       </div>
