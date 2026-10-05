@@ -58,3 +58,4 @@ export { default as Download01Icon } from '@hugeicons/core-free-icons/Download01
 export { default as Edit02Icon } from '@hugeicons/core-free-icons/Edit02Icon'
 export { default as Delete02Icon } from '@hugeicons/core-free-icons/Delete02Icon'
 export { default as ChartIcon } from '@hugeicons/core-free-icons/ChartIcon'
+export { default as NotebookIcon } from '@hugeicons/core-free-icons/NotebookIcon'

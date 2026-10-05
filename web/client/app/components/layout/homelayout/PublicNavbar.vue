@@ -10,7 +10,7 @@ withDefaults(defineProps<{
   dashboardTo?: string | null
 }>(), {
   siteName: 'Ctemz Journal',
-  logoUrl: null,
+  logoUrl: "https://tjxyillhageymmwfefzz.supabase.co/storage/v1/object/public/site-assets/site-settings/logo.png",
   allowSignups: true,
   dashboardTo: null,
 })
@@ -60,9 +60,9 @@ const primaryBtn
     <div class="mx-auto grid h-16 w-full max-w-6xl grid-cols-[1fr_auto] items-center gap-3 px-4 md:grid-cols-[1fr_auto_1fr] md:px-6">
       <NuxtLink to="/" class="flex w-fit min-w-0 items-center gap-2.5">
         <BrandLogo :logo-url="logoUrl" :site-name="siteName" :size="32" />
-        <span class="truncate text-base font-extrabold tracking-tight text-text">
+        <!-- <span class="truncate text-base font-extrabold tracking-tight text-text">
           {{ siteName }}
-        </span>
+        </span> -->
       </NuxtLink>
 
       <nav class="hidden items-center gap-1 md:flex" aria-label="Public">

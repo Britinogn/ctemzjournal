@@ -25,6 +25,17 @@ export default defineNuxtConfig({
     '@nuxt/image',
   ],
 
+  // Remote images (Supabase site-assets logos) must be allowlisted or
+  // NuxtImg's optimizer rejects them. Derived from env so local and
+  // production each permit their own Supabase host.
+  image: {
+    domains: [
+      (process.env.NUXT_PUBLIC_SUPABASE_URL || '')
+        .replace(/^https?:\/\//, '')
+        .split('/')[0],
+    ].filter((d): d is string => d !== '' && d !== undefined),
+  },
+
   // Plain `.dark` class (no suffix) — the design tokens switch on it.
   // Follows the OS, remembers the choice, no flash on load.
   colorMode: {
