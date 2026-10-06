@@ -5,37 +5,26 @@ import BrandLogo from '../BrandLogo.vue'
 
 defineProps<{ profile: Profile | null }>()
 
-const route = useRoute()
-// One shared list for the sidebar and the top bar (see useUserNav.ts).
 const { nav, isActive } = useUserNav()
 
-const isAdminRoute = computed(() => route.path.startsWith('/admin'))
-
 const focusRing
-  = 'focus-visible:outline-2-2 focus-visible:outline-2-offset-2 focus-visible:outline-2-primary'
+  = 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
 </script>
 
 <template>
   <aside class="fixed inset-y-0 left-0 z-30 hidden w-20 flex-col border-r border-border bg-surface md:flex xl:w-64" aria-label="Sidebar">
-    <!-- Same height as the top bar, with a bottom border, so the two lines join up -->
+    <!-- Same height as the top bar, so the two bottom borders form one line -->
     <div class="flex h-16 items-center justify-center border-b border-border px-3 xl:justify-start xl:px-5">
       <NuxtLink to="/dashboard" class="flex items-center rounded-lg" :class="focusRing">
         <BrandLogo :show-name="false" :size="150" />
-        <!-- max-xl:sr-only keeps the name for screen readers when the sidebar is the icon rail -->
-        <!-- <span class="ml-2 text-lg font-bold tracking-tight max-xl:sr-only">Ctemz Journal</span> -->
       </NuxtLink>
     </div>
 
-    <!-- Role badge: static "Trader" for traders, Trader/Admin switcher for admins -->
     <div class="mt-4 px-3 xl:px-4">
       <div class="grid grid-cols-1 gap-1 rounded-2xl border border-border bg-bg p-1">
         <NuxtLink
           to="/dashboard"
-          :class="[
-            'rounded-xl px-3 py-2 text-center text-sm font-semibold transition-colors',
-            focusRing,
-            !isAdminRoute ? 'bg-surface text-text shadow-sm ring-1 ring-border' : 'text-muted hover:text-text',
-          ]"
+          :class="['rounded-xl bg-surface px-3 py-2 text-center text-sm font-semibold text-text shadow-sm ring-1 ring-border', focusRing]"
         >
           <span class="xl:hidden" aria-hidden="true">T</span>
           <span class="max-xl:sr-only">Trader</span>
