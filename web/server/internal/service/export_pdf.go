@@ -4,23 +4,43 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"image"
+	"image/draw"
+	_ "image/jpeg" // register JPEG decoder for image.Decode
+	"image/png"
 	"io"
+	"math"
 	"net/http"
+	"net/url"
+	"path"
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	sqlc "github.com/britinogn/ctemzjournal/internal/db/sqlc"
 	"github.com/britinogn/ctemzjournal/internal/repository"
 	"github.com/britinogn/ctemzjournal/pkg/calc"
+	"github.com/go-pdf/fpdf"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/jung-kurt/gofpdf"
+	_ "golang.org/x/image/webp" // optional: accept WebP logos (re-encoded to PNG)
+)
+
+const (
+	logoBucket   = "site-assets"
+	maxLogoBytes = 2 << 20
+	logoTTL      = 10 * time.Minute
+	logoBox      = 18.0 // max logo width/height in mm
+
+	pageWidthUsable = 273.0 // A4 landscape minus 12mm margins
+	rowHeight       = 6.0
+	rowBreakY       = 188.0 // A4 landscape is 210mm tall; 15mm bottom margin
 )
 
 // PDFExporter builds the designed trade-statement PDF: branded header with
-// the site logo, summary strip, full trade table and totals footer.
+// the site logo, summary strip and full trade table.
 // It pages through Trades.List, so filters (including tag/result) match
 // the trade list and the CSV export exactly.
 type PDFExporter struct {
@@ -30,6 +50,12 @@ type PDFExporter struct {
 	settings    *repository.SiteSettings
 	supabaseURL string
 	http        *http.Client
+
+	// Small in-memory logo cache so we don't hit Supabase on every export.
+	logoMu      sync.Mutex
+	logoPath    string
+	logoData    []byte
+	logoExpires time.Time
 }
 
 func NewPDFExporter(
@@ -42,7 +68,7 @@ func NewPDFExporter(
 	return &PDFExporter{
 		trades: trades, tags: tags, setups: setups, settings: settings,
 		supabaseURL: strings.TrimRight(supabaseURL, "/"),
-		http:        &http.Client{Timeout: 10 * time.Second},
+		http:        &http.Client{Timeout: 5 * time.Second},
 	}
 }
 
@@ -57,17 +83,20 @@ type pdfTrade struct {
 func (e *PDFExporter) Export(ctx context.Context, userID uuid.UUID, filter TradeFilter) (string, []byte, error) {
 	const pageSize = 100
 	var all []sqlc.Trade
-	for offset := int32(0); ; offset += pageSize {
+	// Advance by what we actually received and stop only on an empty page, so
+	// a lower server-side limit clamp can never silently truncate the export.
+	for offset := int32(0); ; {
 		f := filter
 		f.Limit, f.Offset = pageSize, offset
 		page, err := e.trades.List(ctx, userID, f)
 		if err != nil {
 			return "", nil, err
 		}
-		all = append(all, page...)
-		if len(page) < pageSize {
+		if len(page) == 0 {
 			break
 		}
+		all = append(all, page...)
+		offset += int32(len(page))
 	}
 
 	setupNames := map[string]string{}
@@ -89,6 +118,8 @@ func (e *PDFExporter) Export(ctx context.Context, userID uuid.UUID, filter Trade
 		} else {
 			pt.setup = "No setup"
 		}
+		// NOTE: one query per trade. Swap for a batch lookup if the
+		// repository grows a ListByTrades(ctx, ids) method.
 		if tags, err := e.tags.ListByTrade(ctx, t.ID); err == nil {
 			names := make([]string, 0, len(tags))
 			for _, tag := range tags {
@@ -108,9 +139,10 @@ func (e *PDFExporter) Export(ctx context.Context, userID uuid.UUID, filter Trade
 		}
 		rows = append(rows, pt)
 	}
-	sort.Slice(rows, func(i, j int) bool { return rows[i].openedAt < rows[j].openedAt })
+	sort.SliceStable(rows, func(i, j int) bool { return rows[i].openedAt < rows[j].openedAt })
 
-	siteName, tagline := "Trading Journal", ""
+	// Settings are fetched once and shared with the logo fetch.
+	siteName, tagline, logoPath := "Trading Journal", "", ""
 	if settings, err := e.settings.Get(ctx); err == nil {
 		if settings.SiteName != "" {
 			siteName = settings.SiteName
@@ -118,65 +150,100 @@ func (e *PDFExporter) Export(ctx context.Context, userID uuid.UUID, filter Trade
 		if settings.Tagline.Valid {
 			tagline = settings.Tagline.String
 		}
+		if settings.LogoPath.Valid {
+			logoPath = settings.LogoPath.String
+		}
 	}
-	logo, logoKind := e.fetchLogo(ctx)
-	sum := calc.Summarize(closed)
+
+	data := statementData{
+		siteName: siteName, tagline: tagline, logo: e.fetchLogo(ctx, logoPath),
+		generatedAt: time.Now().UTC(), total: len(rows),
+		summary: calc.Summarize(closed), rows: rows,
+	}
 
 	var buf bytes.Buffer
-	if err := renderStatement(&buf, statementData{
-		siteName: siteName, tagline: tagline, logo: logo, logoKind: logoKind,
-		generatedAt: time.Now().UTC(), total: len(rows),
-		summary: sum, rows: rows,
-	}); err != nil {
+	err := renderStatement(&buf, data)
+	if err != nil && len(data.logo) > 0 {
+		// A logo gofpdf can't embed must never void the whole export.
+		buf.Reset()
+		data.logo = nil
+		err = renderStatement(&buf, data)
+	}
+	if err != nil {
 		return "", nil, err
 	}
 	return "trades-export-" + time.Now().UTC().Format("20060102-150405") + ".pdf", buf.Bytes(), nil
 }
 
-// fetchLogo downloads the current site logo (PNG/JPEG only; WebP/SVG are
-// skipped because the PDF writer cannot embed them). Never fails the export.
-func (e *PDFExporter) fetchLogo(ctx context.Context) (data []byte, kind string) {
-	if e.supabaseURL == "" {
-		return nil, ""
+// fetchLogo downloads the site logo and returns it normalized to a plain
+// 8-bit PNG (so interlaced, 16-bit, mislabeled or WebP files are all safe to
+// embed), or nil. It never fails the export.
+func (e *PDFExporter) fetchLogo(ctx context.Context, logoPath string) []byte {
+	if e.supabaseURL == "" || logoPath == "" {
+		return nil
 	}
-	settings, err := e.settings.Get(ctx)
-	if err != nil || !settings.LogoPath.Valid || settings.LogoPath.String == "" {
-		return nil, ""
+
+	e.logoMu.Lock()
+	if e.logoPath == logoPath && time.Now().Before(e.logoExpires) {
+		d := e.logoData
+		e.logoMu.Unlock()
+		return d
 	}
-	lower := strings.ToLower(settings.LogoPath.String)
-	switch {
-	case strings.HasSuffix(lower, ".png"):
-		kind = "png"
-	case strings.HasSuffix(lower, ".jpg"), strings.HasSuffix(lower, ".jpeg"):
-		kind = "jpg"
-	default:
-		return nil, ""
+	e.logoMu.Unlock()
+
+	// Clean the path (blocks "..") and escape each segment.
+	clean := strings.TrimPrefix(path.Clean("/"+logoPath), "/")
+	if clean == "" {
+		return nil
 	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet,
-		e.supabaseURL+"/storage/v1/object/public/site-assets/"+strings.TrimLeft(settings.LogoPath.String, "/"), nil)
+	segs := strings.Split(clean, "/")
+	for i, s := range segs {
+		segs[i] = url.PathEscape(s)
+	}
+	u := e.supabaseURL + "/storage/v1/object/public/" + logoBucket + "/" + strings.Join(segs, "/")
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
 	if err != nil {
-		return nil, ""
+		return nil
 	}
 	resp, err := e.http.Do(req)
-	if err != nil || resp.StatusCode != http.StatusOK {
-		if resp != nil {
-			resp.Body.Close()
-		}
-		return nil, ""
+	if err != nil {
+		return nil
 	}
 	defer resp.Body.Close()
-	data, err = io.ReadAll(io.LimitReader(resp.Body, 2<<20))
-	if err != nil || len(data) == 0 {
-		return nil, ""
+	if resp.StatusCode != http.StatusOK {
+		return nil
 	}
-	return data, kind
+
+	// Read limit+1 so an oversized file is rejected rather than truncated.
+	raw, err := io.ReadAll(io.LimitReader(resp.Body, maxLogoBytes+1))
+	if err != nil || len(raw) == 0 || len(raw) > maxLogoBytes {
+		return nil
+	}
+
+	img, _, err := image.Decode(bytes.NewReader(raw)) // sniffs real format, ignores extension
+	if err != nil {
+		return nil
+	}
+	b := img.Bounds()
+	dst := image.NewNRGBA(image.Rect(0, 0, b.Dx(), b.Dy())) // forces 8-bit
+	draw.Draw(dst, dst.Bounds(), img, b.Min, draw.Src)
+
+	var out bytes.Buffer
+	if err := png.Encode(&out, dst); err != nil {
+		return nil
+	}
+
+	e.logoMu.Lock()
+	e.logoPath, e.logoData, e.logoExpires = logoPath, out.Bytes(), time.Now().Add(logoTTL)
+	e.logoMu.Unlock()
+	return out.Bytes()
 }
 
 type statementData struct {
 	siteName    string
 	tagline     string
-	logo        []byte
-	logoKind    string
+	logo        []byte // normalized PNG, or nil
 	generatedAt time.Time
 	total       int
 	summary     calc.Summary
@@ -184,8 +251,10 @@ type statementData struct {
 }
 
 func renderStatement(buf *bytes.Buffer, d statementData) error {
-	pdf := gofpdf.New("L", "mm", "A4", "")
-	pdf.SetCompression(false) // keep text searchable/selectable
+	pdf := fpdf.New("L", "mm", "A4", "")
+	// Built-in fonts are cp1252; translate every string we draw.
+	tr := pdf.UnicodeTranslatorFromDescriptor("")
+
 	pdf.SetMargins(12, 12, 12)
 	pdf.SetAutoPageBreak(true, 15)
 	pdf.AliasNbPages("{pages}")
@@ -199,25 +268,39 @@ func renderStatement(buf *bytes.Buffer, d statementData) error {
 
 	pdf.AddPage()
 	top := pdf.GetY()
+
+	// Logo: fit inside a logoBox x logoBox square, keeping aspect ratio.
+	textX, logoBottom := 12.0, top
 	if len(d.logo) > 0 {
-		pdf.RegisterImageOptionsReader("sitelogo",
-			gofpdf.ImageOptions{ImageType: d.logoKind, ReadDpi: true},
-			bytes.NewReader(d.logo))
-		pdf.Image("sitelogo", 12, top, 18, 0, false, "", 0, "")
+		if cfg, err := png.DecodeConfig(bytes.NewReader(d.logo)); err == nil && cfg.Width > 0 && cfg.Height > 0 {
+			w, h := logoBox, logoBox
+			if ratio := float64(cfg.Width) / float64(cfg.Height); ratio >= 1 {
+				h = logoBox / ratio
+			} else {
+				w = logoBox * ratio
+			}
+			pdf.RegisterImageOptionsReader("sitelogo", fpdf.ImageOptions{ImageType: "png"}, bytes.NewReader(d.logo))
+			pdf.Image("sitelogo", 12, top, w, h, false, "", 0, "")
+			textX = 12 + w + 4
+			logoBottom = top + h
+		}
 	}
-	pdf.SetXY(34, top)
+
+	pdf.SetXY(textX, top)
 	pdf.SetFont("Helvetica", "B", 17)
 	pdf.SetTextColor(15, 23, 42)
-	pdf.CellFormat(0, 8, d.siteName, "", 1, "L", false, 0, "")
-	pdf.SetX(34)
+	pdf.CellFormat(0, 8, tr(d.siteName), "", 1, "L", false, 0, "")
+	pdf.SetX(textX)
 	pdf.SetFont("Helvetica", "", 9)
 	pdf.SetTextColor(100, 116, 139)
-	pdf.CellFormat(0, 5, "Trade statement  ·  "+d.generatedAt.Format("2006-01-02 15:04 UTC"), "", 1, "L", false, 0, "")
+	pdf.CellFormat(0, 5, tr("Trade statement  ·  "+d.generatedAt.Format("2006-01-02 15:04 UTC")), "", 1, "L", false, 0, "")
 	if d.tagline != "" {
-		pdf.SetX(34)
+		pdf.SetX(textX)
 		pdf.SetFont("Helvetica", "I", 9)
-		pdf.CellFormat(0, 5, d.tagline, "", 1, "L", false, 0, "")
+		pdf.CellFormat(0, 5, tr(d.tagline), "", 1, "L", false, 0, "")
 	}
+	// Start the summary below whichever is taller: the logo or the text block.
+	pdf.SetY(math.Max(pdf.GetY(), logoBottom))
 
 	// Summary strip.
 	pdf.Ln(4)
@@ -232,7 +315,7 @@ func renderStatement(buf *bytes.Buffer, d statementData) error {
 		fmt.Sprintf("Net P&L: %+.2f", d.summary.TotalPnl),
 		fmt.Sprintf("Max DD: %.2f", d.summary.MaxDrawdown),
 	}
-	colW := 273.0 / float64(len(stats))
+	colW := pageWidthUsable / float64(len(stats))
 	y0 := pdf.GetY()
 	for i, s := range stats {
 		pdf.SetXY(12+colW*float64(i), y0)
@@ -240,13 +323,14 @@ func renderStatement(buf *bytes.Buffer, d statementData) error {
 	}
 	pdf.SetY(y0 + 11)
 
+	// Widths sum to exactly pageWidthUsable (273mm).
 	cols := []struct {
 		title string
 		w     float64
 	}{
-		{"Opened", 20}, {"Pair", 22}, {"Dir", 12}, {"Setup", 38},
-		{"Entry", 24}, {"SL", 24}, {"TP", 24}, {"Exit", 24},
-		{"Lots", 14}, {"P&L", 24}, {"R", 16}, {"Status", 16},
+		{"Opened", 20}, {"Pair", 22}, {"Dir", 12}, {"Setup", 34}, {"Tags", 36},
+		{"Entry", 22}, {"SL", 22}, {"TP", 22}, {"Exit", 22},
+		{"Lots", 12}, {"P&L", 22}, {"R", 13}, {"Status", 14},
 	}
 	drawTableHead := func() {
 		pdf.SetFont("Helvetica", "B", 7.5)
@@ -264,10 +348,10 @@ func renderStatement(buf *bytes.Buffer, d statementData) error {
 	}
 	drawTableHead()
 
-	// Rows with manual page breaks (gofpdf has no flowing tables).
+	// Rows with manual page breaks (fpdf has no flowing tables).
 	fill := false
 	for _, r := range d.rows {
-		if pdf.GetY() > 175 {
+		if pdf.GetY() > rowBreakY {
 			pdf.AddPage()
 			drawTableHead()
 		}
@@ -275,20 +359,44 @@ func renderStatement(buf *bytes.Buffer, d statementData) error {
 			pdf.SetFillColor(246, 248, 251)
 		}
 		cells := []string{
-			r.openedAt, r.row.Pair, r.row.Direction, truncStr(r.setup, 22),
+			r.openedAt, r.row.Pair, r.row.Direction, truncStr(r.setup, 18), truncStr(r.tags, 20),
 			fnumStr(r.row.Entry), fnumStr(r.row.StopLoss), fnumStr(r.row.TakeProfit), fnumStr(r.row.ExitPrice),
 			fnumStr(r.row.LotSize), fnumStr(r.row.Pnl), fnumStr(r.row.RMultiple), r.row.Status,
 		}
 		x0 := 12.0
 		for i, c := range cols {
 			pdf.SetXY(x0, pdf.GetY())
-			pdf.CellFormat(c.w, 6, cells[i], "", 0, "C", fill, 0, "")
+			switch c.title {
+			case "P&L":
+				setSignColor(pdf, r.row.Pnl)
+			case "R":
+				setSignColor(pdf, r.row.RMultiple)
+			default:
+				pdf.SetTextColor(15, 23, 42)
+			}
+			pdf.CellFormat(c.w, rowHeight, tr(cells[i]), "", 0, "C", fill, 0, "")
 			x0 += c.w
 		}
-		pdf.Ln(6)
+		pdf.Ln(rowHeight)
 		fill = !fill
 	}
 	return pdf.Output(buf)
+}
+
+// setSignColor paints positive values green, negative red, else default ink.
+func setSignColor(pdf *fpdf.Fpdf, n pgtype.Numeric) {
+	if !n.Valid {
+		pdf.SetTextColor(15, 23, 42)
+		return
+	}
+	switch v := numericFloat(n); {
+	case v > 0:
+		pdf.SetTextColor(22, 163, 74)
+	case v < 0:
+		pdf.SetTextColor(220, 38, 38)
+	default:
+		pdf.SetTextColor(15, 23, 42)
+	}
 }
 
 // fnumStr renders a nullable numeric or "" (open trades have no pnl/R yet).
@@ -299,9 +407,11 @@ func fnumStr(n pgtype.Numeric) string {
 	return strconv.FormatFloat(numericFloat(n), 'f', -1, 64)
 }
 
+// truncStr shortens by runes (not bytes) so multibyte characters are never split.
 func truncStr(s string, n int) string {
-	if len(s) <= n {
+	r := []rune(s)
+	if len(r) <= n {
 		return s
 	}
-	return s[:n-1] + "…"
+	return string(r[:n-1]) + "…"
 }
