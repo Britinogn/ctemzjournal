@@ -43,10 +43,7 @@ func (m *Maintenance) RequireAvailable(next http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 			return
 		}
-		uid, role, ok := m.adminIdentity(r)
-		if !ok {
-			_ = uid
-			_ = role
+		if _, _, ok := m.adminIdentity(r); !ok {
 			response.Error(w, http.StatusServiceUnavailable, "The site is under maintenance. Please check back shortly.")
 			return
 		}

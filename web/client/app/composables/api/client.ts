@@ -46,6 +46,11 @@ export function useApi(): ApiClient {
       else if (status === 429) {
         toast.error('Too many requests, try again shortly')
       }
+      else if (status === 503) {
+        toast.info('Under maintenance — please check back shortly')
+        await $supabase.auth.signOut()
+        await navigateTo('/')
+      }
       throw err
     }
   }

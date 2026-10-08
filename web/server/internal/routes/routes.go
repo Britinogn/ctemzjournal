@@ -35,6 +35,10 @@ func New(d Deps) chi.Router {
 	r.Use(chiMW.Recoverer)
 	r.Use(middleware.CORS(d.Config.AllowedOrigins()))
 
+	if d.Auth != nil && d.Queries != nil {
+		r.Use(middleware.NewMaintenance(d.Queries, d.Auth.Keyfunc()).RequireAvailable)
+	}
+
 	MountHealth(r)
 
 	cld, err := infra.New(d.Config.CloudinaryCloudName, d.Config.CloudinaryAPIKey, d.Config.CloudinaryAPISecret)
