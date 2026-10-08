@@ -11,4 +11,5 @@ import (
 // static segment wins over /{id}). Exports are rate-limited (heavy query).
 func mountExportCSV(r chi.Router, h *handler.Export) {
 	r.With(middleware.ExportLimiter).Get("/export.csv", h.CSV)
+	r.With(middleware.ExportLimiter).Get("/export.pdf", h.PDF)
 }

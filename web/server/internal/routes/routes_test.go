@@ -8,8 +8,8 @@ import (
 )
 
 // TestTradesRouteMerge proves the /trades group registers CRUD, visibility
-// and export.csv together (chi panics on two Route("/trades") blocks, so
-// export mounts inside the single group; static wins over /{id}).
+// and both exports together (chi panics on two Route("/trades") blocks, so
+// exports mount inside the single group; static wins over /{id}).
 func TestTradesRouteMerge(t *testing.T) {
 	r := chi.NewRouter()
 	defer func() {
@@ -19,17 +19,20 @@ func TestTradesRouteMerge(t *testing.T) {
 	}()
 	MountTrades(r, nil, nil, nil)
 
-	foundExport, foundGet := false, false
+	foundCSV, foundPDF, foundGet := false, false, false
 	_ = chi.Walk(r, func(method, route string, _ http.Handler, _ ...func(http.Handler) http.Handler) error {
 		if method == "GET" && route == "/trades/export.csv" {
-			foundExport = true
+			foundCSV = true
+		}
+		if method == "GET" && route == "/trades/export.pdf" {
+			foundPDF = true
 		}
 		if method == "GET" && route == "/trades/{id}" {
 			foundGet = true
 		}
 		return nil
 	})
-	if !foundExport || !foundGet {
-		t.Fatalf("routes missing: export=%v get=%v", foundExport, foundGet)
+	if !foundCSV || !foundPDF || !foundGet {
+		t.Fatalf("routes missing: csv=%v pdf=%v get=%v", foundCSV, foundPDF, foundGet)
 	}
 }

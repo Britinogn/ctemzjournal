@@ -13,9 +13,32 @@ import (
 
 // Pairs tracked by the rates service (USD/NGN included when the provider
 // serves it — docx open decision; missing pairs simply stay absent).
+// var Pairs = []string{
+// 	"EUR/USD", "GBP/USD", "USD/JPY", "USD/CHF",
+// 	"AUD/USD", "USD/CAD", "XAU/USD", "USD/NGN",
+// }
+
 var Pairs = []string{
 	"EUR/USD", "GBP/USD", "USD/JPY", "USD/CHF",
-	"AUD/USD", "USD/CAD", "XAU/USD", "USD/NGN",
+	"AUD/USD", "USD/CAD", "NZD/USD",
+
+	"EUR/GBP", "EUR/JPY", "EUR/CHF", "EUR/AUD",
+	"EUR/CAD", "EUR/NZD",
+
+	"GBP/JPY", "GBP/CHF", "GBP/AUD", "GBP/CAD",
+	"GBP/NZD",
+
+	"AUD/JPY", "AUD/CHF", "AUD/CAD", "AUD/NZD",
+
+	"NZD/JPY", "NZD/CHF", "NZD/CAD",
+
+	"CAD/JPY", "CAD/CHF",
+
+	"CHF/JPY",
+
+	"XAU/USD", "USD/NGN",
+
+	"BTC/USD", "ETH/USD", "SOL/USD",
 }
 
 // Quote is one cached price. Browsers never call providers directly.

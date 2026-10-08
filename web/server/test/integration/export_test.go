@@ -73,3 +73,53 @@ func TestTradesExportCSV(t *testing.T) {
 		t.Fatalf("pnl missing: %v", rows[1])
 	}
 }
+
+func TestTradesExportPDF(t *testing.T) {
+	database := helpers.MustConnect(t)
+	helpers.Truncate(t, database)
+	ctx := context.Background()
+	user := fixtures.MustUser(t, database, "alice")
+
+	accounts := service.NewAccounts(repository.NewAccounts(database.Queries))
+	account, err := accounts.Create(ctx, user, service.AccountCreate{Name: "Main", Type: "demo"})
+	if err != nil {
+		t.Fatalf("seed account: %v", err)
+	}
+	trades := service.NewTrades(
+		repository.NewTrades(database.Queries),
+		repository.NewTradeTags(database.Queries),
+		repository.NewAccounts(database.Queries),
+		repository.NewSetups(database.Queries),
+		repository.NewTags(database.Queries),
+		database.Queries,
+	)
+	entry, sl, exit, lots := 1.0850, 1.0800, 1.0950, 1.0
+	if _, err := trades.Create(ctx, user, service.TradeCreate{
+		AccountID: account.ID, Pair: "EUR/USD", Direction: "long",
+		Entry: &entry, StopLoss: &sl, ExitPrice: &exit, LotSize: &lots,
+		Status: "closed",
+	}); err != nil {
+		t.Fatalf("seed trade: %v", err)
+	}
+
+	pdf := service.NewPDFExporter(
+		trades,
+		repository.NewTradeTags(database.Queries),
+		repository.NewSetups(database.Queries),
+		repository.NewSiteSettings(database.Queries),
+		"",
+	)
+	filename, data, err := pdf.Export(ctx, user, service.TradeFilter{})
+	if err != nil {
+		t.Fatalf("export pdf: %v", err)
+	}
+	if !strings.HasPrefix(filename, "trades-export-") || !strings.HasSuffix(filename, ".pdf") {
+		t.Fatalf("filename: %s", filename)
+	}
+	if len(data) < 5 || string(data[:5]) != "%PDF-" {
+		t.Fatalf("not a PDF (%d bytes)", len(data))
+	}
+	if !strings.Contains(string(data), "EUR/USD") {
+		t.Fatalf("trade missing from PDF body")
+	}
+}

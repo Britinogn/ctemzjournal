@@ -15,7 +15,7 @@ import (
 
 // PipSize returns the price increment of one pip for a pair.
 // JPY pairs quote to 2 decimals (0.01), most forex to 4 (0.0001),
-// XAU/USD (gold) to 2 (0.01).
+// XAU/USD (gold) and crypto (BTC/ETH/SOL, quoted in dollars/cents) to 2 (0.01).
 func PipSize(pair string) float64 {
 	p := strings.ToUpper(pair)
 	if strings.Contains(p, "JPY") {
@@ -24,13 +24,21 @@ func PipSize(pair string) float64 {
 	if strings.Contains(p, "XAU") {
 		return 0.01
 	}
+	if strings.Contains(p, "BTC") || strings.Contains(p, "ETH") || strings.Contains(p, "SOL") {
+		return 0.01
+	}
 	return 0.0001
 }
 
-// ContractSize returns units per 1.0 lot: 100_000 for forex, 100 oz for gold.
+// ContractSize returns units per 1.0 lot: 100_000 for forex, 100 oz for
+// gold, 1 coin for crypto (so lot_size means coins there).
 func ContractSize(pair string) float64 {
-	if strings.Contains(strings.ToUpper(pair), "XAU") {
+	u := strings.ToUpper(pair)
+	if strings.Contains(u, "XAU") {
 		return 100
+	}
+	if strings.Contains(u, "BTC") || strings.Contains(u, "ETH") || strings.Contains(u, "SOL") {
+		return 1
 	}
 	return 100_000
 }

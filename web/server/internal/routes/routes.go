@@ -80,7 +80,13 @@ func New(d Deps) chi.Router {
 	)
 	tradesHandler := handler.NewTrades(tradesSvc, imagesSvc)
 	imagesHandler := handler.NewImages(imagesSvc)
-	exportHandler := handler.NewExport(tradesSvc)
+	exportHandler := handler.NewExport(tradesSvc, service.NewPDFExporter(
+		tradesSvc,
+		repository.NewTradeTags(d.Queries),
+		repository.NewSetups(d.Queries),
+		repository.NewSiteSettings(d.Queries),
+		d.Config.SupabaseURL,
+	))
 	statsSvc := service.NewStats(
 		repository.NewStats(d.Queries),
 		profiles,

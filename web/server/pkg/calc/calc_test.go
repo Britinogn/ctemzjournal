@@ -20,6 +20,9 @@ func TestPipAndContractSize(t *testing.T) {
 		{"USD/CHF", 0.0001, 100_000},
 		{"XAU/USD", 0.01, 100},
 		{"USD/NGN", 0.0001, 100_000},
+		{"BTC/USD", 0.01, 1},
+		{"ETH/USD", 0.01, 1},
+		{"SOL/USD", 0.01, 1},
 	}
 	for _, c := range cases {
 		if got := PipSize(c.pair); got != c.pip {
@@ -77,6 +80,20 @@ func TestMetricsOf(t *testing.T) {
 				Entry: 1.0850, StopLoss: 1.0900, ExitPrice: 1.0920, HasExit: true,
 				LotSize: 1},
 			want: Metrics{Risk: 500, Gross: -700, Net: -700, R: -1.4},
+		},
+		{
+			name: "BTCUSD long win (lots are coins)",
+			in: TradeInput{Pair: "BTC/USD", Direction: "long",
+				Entry: 67000, StopLoss: 66000, ExitPrice: 69000, HasExit: true,
+				LotSize: 0.5},
+			want: Metrics{Risk: 500, Gross: 1000, Net: 1000, R: 2},
+		},
+		{
+			name: "ETHUSD short loss",
+			in: TradeInput{Pair: "ETH/USD", Direction: "short",
+				Entry: 3500, StopLoss: 3600, ExitPrice: 3550, HasExit: true,
+				LotSize: 2},
+			want: Metrics{Risk: 200, Gross: -100, Net: -100, R: -0.5},
 		},
 	}
 	for _, c := range cases {
