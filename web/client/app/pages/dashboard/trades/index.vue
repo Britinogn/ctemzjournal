@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { keepPreviousData, useQuery } from '@tanstack/vue-query'
+import { onClickOutside } from '@vueuse/core'
 import { toast } from 'vue-sonner'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { tradesKey, type Trade, type TradeFilters } from '~/types'
@@ -99,12 +100,13 @@ watch(page, () => {
   })
 })
 
-const exporting = ref(false)
+const exporting = ref<'' | 'csv' | 'pdf'>('')
 
-async function onExport(): Promise<void> {
+async function onExport(format: 'csv' | 'pdf'): Promise<void> {
   if (exporting.value)
     return
-  exporting.value = true
+  exporting.value = format
+  exportMenu.value = false
   try {
     const { $supabase } = useNuxtApp() as unknown as { $supabase: SupabaseClient }
     const { data: { session } } = await $supabase.auth.getSession()
@@ -114,7 +116,8 @@ async function onExport(): Promise<void> {
         q.set(k, String(v))
     }
     const qs = q.toString()
-    const blob = await $fetch<Blob>(`/trades/export.csv${qs ? `?${qs}` : ''}`, {
+    const ext = format === 'csv' ? 'csv' : 'pdf'
+    const blob = await $fetch<Blob>(`/trades/export.${ext}${qs ? `?${qs}` : ''}`, {
       baseURL: useRuntimeConfig().public.apiUrl as string,
       headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
       responseType: 'blob',
@@ -122,18 +125,25 @@ async function onExport(): Promise<void> {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = 'trades-export.csv'
+    a.download = `trades-export.${ext}`
     a.click()
     URL.revokeObjectURL(url)
-    toast.success('Export downloaded')
+    toast.success(`Export downloaded (${ext.toUpperCase()})`)
   }
   catch {
     toast.error('Export failed')
   }
   finally {
-    exporting.value = false
+    exporting.value = ''
   }
 }
+
+const exportMenu = ref(false)
+const exportWrap = ref<HTMLElement | null>(null)
+
+onClickOutside(exportWrap, () => {
+  exportMenu.value = false
+})
 
 /* ---------- Shared look ---------- */
 const panel = 'rounded-2xl border border-border bg-surface p-4 md:p-5'
@@ -225,26 +235,47 @@ const pagerBtn = 'inline-flex h-11 items-center rounded-xl border border-border 
           Clear filters
         </button>
 
-        <button
-          type="button"
-          :disabled="exporting"
-          :aria-busy="exporting"
-          class="col-span-2 inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-border bg-bg px-4 text-sm font-semibold transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-wait disabled:opacity-60 md:col-span-1 md:ml-auto"
-          @click="onExport"
-        >
-          <UiAppIcon
-            v-if="exporting"
-            :icon="Loading03Icon"
-            :size="16"
-            class="animate-spin motion-reduce:animate-none"
-          />
-          <UiAppIcon
-            v-else
-            :icon="Download01Icon"
-            :size="16"
-          />
-          {{ exporting ? 'Exporting…' : 'Export CSV' }}
-        </button>
+        <div ref="exportWrap" class="relative col-span-2 md:col-span-1 md:ml-auto" @keydown.escape="exportMenu = false">
+          <button
+            type="button"
+            :disabled="exporting !== ''"
+            :aria-busy="exporting !== ''"
+            :aria-expanded="exportMenu"
+            aria-haspopup="menu"
+            class="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-border bg-bg px-4 text-sm font-semibold transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-wait disabled:opacity-60 md:w-auto"
+            @click="exportMenu = !exportMenu"
+          >
+            <UiAppIcon
+              v-if="exporting !== ''"
+              :icon="Loading03Icon"
+              :size="16"
+              class="animate-spin motion-reduce:animate-none"
+            />
+            <UiAppIcon
+              v-else
+              :icon="Download01Icon"
+              :size="16"
+            />
+            {{ exporting !== '' ? 'Exporting…' : 'Export' }}
+          </button>
+          <div
+            v-if="exportMenu"
+            role="menu"
+            class="absolute right-0 z-50 mt-1.5 w-44 overflow-hidden rounded-xl border border-border bg-surface p-1.5 shadow-xl"
+          >
+            <button
+              v-for="f in (['csv', 'pdf'] as const)"
+              :key="f"
+              type="button"
+              role="menuitem"
+              class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition hover:bg-bg"
+              @click="onExport(f)"
+            >
+              {{ f === 'csv' ? 'CSV file' : 'PDF statement' }}
+              <span class="tnum text-[11px] uppercase text-muted">.{f}</span>
+            </button>
+          </div>
+        </div>
       </div>
     </section>
 

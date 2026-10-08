@@ -19,7 +19,25 @@ const emit = defineEmits<{
   cancel: [];
 }>()
 
-const PAIRS = ['EUR/USD', 'GBP/USD', 'USD/JPY', 'USD/CHF', 'AUD/USD', 'USD/CAD', 'XAU/USD', 'USD/NGN']
+// const PAIRS = ['EUR/USD', 'GBP/USD', 'USD/JPY', 'USD/CHF', 'AUD/USD', 'USD/CAD', 'XAU/USD', 'USD/NGN']
+const PAIRS = [
+  'EUR/USD', 'GBP/USD', 'USD/JPY', 'USD/CHF',
+  'AUD/USD', 'USD/CAD', 'NZD/USD',
+
+  'EUR/GBP', 'EUR/JPY', 'EUR/CHF', 'EUR/AUD', 'EUR/CAD', 'EUR/NZD',
+
+  'GBP/JPY', 'GBP/CHF', 'GBP/AUD', 'GBP/CAD', 'GBP/NZD',
+
+  'AUD/JPY', 'AUD/CHF', 'AUD/CAD', 'AUD/NZD',
+
+  'NZD/JPY', 'NZD/CHF', 'NZD/CAD',
+
+  'CAD/JPY', 'CAD/CHF', 'CHF/JPY',
+
+  'XAU/USD', 'USD/NGN',
+
+  'BTC/USD', 'ETH/USD', 'SOL/USD',
+]
 const TIMEFRAMES = ['M1', 'M5', 'M15', 'M30', 'H1', 'H4', 'D1', 'W1']
 const EMOTIONS = ['Calm', 'Confident', 'Neutral', 'Anxious', 'FOMO', 'Frustrated']
 const MAX_IMAGES = 5
