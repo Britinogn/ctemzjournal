@@ -6,7 +6,9 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"sync"
 	"testing"
+	"time"
 )
 
 func twelveServer(t *testing.T, prices map[string]string, code int, message string) *httptest.Server {
@@ -37,6 +39,51 @@ func TestTwelveDataError(t *testing.T) {
 	td := TwelveData{APIKey: "k", BaseURL: srv.URL, Client: srv.Client()}
 	if _, err := td.Fetch(context.Background(), []string{"EUR/USD"}); err == nil {
 		t.Fatalf("expected rate-limit error")
+	}
+}
+
+func TestTwelveDataDefaultPace(t *testing.T) {
+	var td TwelveData
+	if got := td.paceGap(); got != 8*time.Second {
+		t.Fatalf("default pace = %v, want 8s", got)
+	}
+}
+
+// TestTwelveDataPacing proves pair requests are spaced out so a refresh
+// cycle cannot breach the per-minute credit cap.
+func TestTwelveDataPacing(t *testing.T) {
+	var mu sync.Mutex
+	var arrivals []time.Time
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mu.Lock()
+		arrivals = append(arrivals, time.Now())
+		mu.Unlock()
+		_ = json.NewEncoder(w).Encode(map[string]string{"price": "1.0"})
+	}))
+	defer srv.Close()
+	td := TwelveData{APIKey: "k", BaseURL: srv.URL, Client: srv.Client(), pace: 120 * time.Millisecond}
+	pairs := []string{"EUR/USD", "GBP/USD", "USD/JPY"}
+	if _, err := td.Fetch(context.Background(), pairs); err != nil {
+		t.Fatalf("fetch: %v", err)
+	}
+	if len(arrivals) != len(pairs) {
+		t.Fatalf("requests = %d, want %d", len(arrivals), len(pairs))
+	}
+	for i := 1; i < len(arrivals); i++ {
+		if gap := arrivals[i].Sub(arrivals[i-1]); gap < 80*time.Millisecond {
+			t.Fatalf("gap %d = %v, want >= ~120ms", i, gap)
+		}
+	}
+}
+
+func TestTwelveDataPacingCancel(t *testing.T) {
+	srv := twelveServer(t, map[string]string{"EUR/USD": "1.0"}, 0, "")
+	defer srv.Close()
+	td := TwelveData{APIKey: "k", BaseURL: srv.URL, Client: srv.Client(), pace: time.Hour}
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	if _, err := td.Fetch(ctx, []string{"EUR/USD", "GBP/USD"}); err == nil {
+		t.Fatalf("expected cancellation during pacing")
 	}
 }
 

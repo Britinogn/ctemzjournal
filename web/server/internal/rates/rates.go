@@ -152,12 +152,26 @@ func (s *Service) Snapshot() (quotes []Quote, updatedAt time.Time, stale bool) {
 	return quotes, s.updatedAt, s.stale
 }
 
-// TwelveData is the primary rates source (free plan: 800 req/day).
-// One request per pair per cycle: 8 pairs x 3/hour x 24h = 576/day.
+// TwelveData is the primary rates source (free plan: 800 req/day + 8/min).
+// One request per pair per cycle, paced so a cycle never breaches the
+// per-minute cap no matter how many pairs are tracked.
 type TwelveData struct {
 	APIKey  string
 	BaseURL string // default https://api.twelvedata.com
 	Client  *http.Client
+	// pace is the minimum gap between pair requests (tests override it).
+	// Zero means defaultPace.
+	pace time.Duration
+}
+
+// defaultPace keeps usage at ~7 credits/minute against an 8/minute cap.
+const defaultPace = 8 * time.Second
+
+func (t TwelveData) paceGap() time.Duration {
+	if t.pace <= 0 {
+		return defaultPace
+	}
+	return t.pace
 }
 
 func (t TwelveData) Fetch(ctx context.Context, pairs []string) (map[string]float64, error) {
@@ -170,7 +184,16 @@ func (t TwelveData) Fetch(ctx context.Context, pairs []string) (map[string]float
 		client = &http.Client{Timeout: 15 * time.Second}
 	}
 	out := map[string]float64{}
-	for _, pair := range pairs {
+	for i, pair := range pairs {
+		if i > 0 {
+			timer := time.NewTimer(t.paceGap())
+			select {
+			case <-ctx.Done():
+				timer.Stop()
+				return nil, ctx.Err()
+			case <-timer.C:
+			}
+		}
 		u := base + "/price?symbol=" + url.QueryEscape(pair) + "&apikey=" + url.QueryEscape(t.APIKey)
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
 		if err != nil {
