@@ -6,9 +6,12 @@ import { timeAgo } from '~/utils/format'
 
 definePageMeta({ layout: 'public' })
 
-const title = 'Live prices | Ctemz Journal'
-const description = 'Indicative forex, gold and naira prices for journal context. Refreshed every minute.'
-useSeoMeta({ title, description, ogTitle: title, ogDescription: description })
+usePageSeo(
+  'Live Forex Prices',
+  'Check live prices for the pairs you trade, then log your trades and track your performance in Ctemz Journal.',
+)
+// const description = 'Indicative forex, gold and naira prices for journal context. Refreshed every minute.'
+// useSeoMeta({ title, description, ogTitle: title, ogDescription: description })
 
 const api = useApi()
 

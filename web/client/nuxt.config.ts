@@ -23,7 +23,17 @@ export default defineNuxtConfig({
     '@nuxt/eslint',
     'vue-sonner/nuxt',
     '@nuxt/image',
+    '@nuxtjs/sitemap',
   ],
+
+  site: {
+    url: 'https://ctemzjournal.onrender.com',
+    name: 'Ctemz Journal',
+  },
+
+  sitemap: {
+    exclude: ['/admin/**', '/dashboard/**', '/auth/**'],
+  },
 
   // Remote images (Supabase site-assets logos) must be allowlisted or
   // NuxtImg's optimizer rejects them. Derived from env so local and

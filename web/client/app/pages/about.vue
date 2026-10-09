@@ -1,10 +1,14 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'public' })
 
-const title = 'About | Ctemz Journal'
-const description =
-  'A journal for the trader you are becoming. Document your trades, track what you learn, and see your progress over time.'
-useSeoMeta({ title, description, ogTitle: title, ogDescription: description })
+// const title = 'About | Ctemz Journal'
+// const description =
+//   'A journal for the trader you are becoming. Document your trades, track what you learn, and see your progress over time.'
+// useSeoMeta({ title, description, ogTitle: title, ogDescription: description })
+usePageSeo(
+  'About',
+  'Learn how Ctemz Journal helps traders learn, record, review and improve their trading process with their own data.',
+)
 
 /* ---------- 1. Where learning comes from ---------- */
 const sources = [

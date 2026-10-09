@@ -13,6 +13,7 @@ import {
 } from '~/utils/icons'
 
 definePageMeta({ middleware: 'guest' })
+usePageSeo('Create your account', 'Create a Ctemz Journal account and start logging your trades.')
 
 const api = useApi()
 

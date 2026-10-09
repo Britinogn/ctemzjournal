@@ -10,6 +10,7 @@ import {
 } from '~/utils/icons'
 
 definePageMeta({ middleware: 'guest' })
+usePageSeo('Log in', 'Log in to your Ctemz Journal account.')
 
 const email = ref('')
 const password = ref('')
