@@ -5,7 +5,8 @@ import { siteSettingsKey, type PublicSettings } from '~/types'
 
 const LAST_UPDATED = 'October 9, 2026'
 
-useHead({ title: 'Privacy Policy | Ctemz Journal' })
+// useHead({ title: 'Privacy Policy | Ctemz Journal' })
+useHead({ title: 'Privacy Policy' })
 useSeoMeta({
   description:
     'How Ctemz Journal collects, uses and protects your information and trading journal data.',

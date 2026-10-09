@@ -1,20 +1,38 @@
 <script setup lang="ts">
 const siteUrl = 'https://ctemzjournal.onrender.com'
 const siteName = 'Ctemz Journal'
-const defaultTitle = 'Ctemz Journal — Know why you win, and why you lose.'
-const defaultDescription =
-  'Journal every forex trade, track your performance, review your setups, and build a record of what you learn from the market.'
+const defaultTitle = 'Ctemz Journal — Forex Trading Journal & Analytics'
+// Keep under ~160 characters so Google doesn't cut it off.
+const defaultDescription
+  = 'Log your forex trades, track risk, analyze win rates and cut emotional trading with Ctemz Journal, your free digital trading journal.'
+const ogImage = `${siteUrl}/img/og-image.png`
+const ogImageAlt = 'Ctemz Journal — Know why you win, and why you lose.'
 
 const route = useRoute()
 
+// Reactive so it updates on every navigation.
 const canonical = computed(
   () => `${siteUrl}${route.path === '/' ? '' : route.path}`,
+)
+
+// Private areas should never be indexed.
+const isPrivate = computed(() =>
+  ['/admin', '/dashboard', '/auth'].some(p => route.path === p || route.path.startsWith(`${p}/`)),
+)
+const robots = computed(() =>
+  isPrivate.value
+    ? 'noindex, nofollow'
+    : 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
 )
 
 useHead({
   htmlAttrs: { lang: 'en' },
 
-  titleTemplate: (title) => (title ? `${title} · ${siteName}` : defaultTitle),
+  // Pages set a plain title (e.g. 'Privacy Policy'); the site name is added here.
+  titleTemplate: title =>
+    !title || title === defaultTitle || title === siteName
+      ? defaultTitle
+      : `${title} · ${siteName}`,
 
   link: [
     { rel: 'icon', type: 'image/png', sizes: '96x96', href: '/img/favicon-96x96.png' },
@@ -24,29 +42,25 @@ useHead({
     { rel: 'manifest', href: '/img/site.webmanifest' },
     { rel: 'canonical', href: canonical },
     { rel: 'mask-icon', href: '/img/safari-pinned-tab.svg', color: '#0E7C86' },
-    { rel: 'sitemap', type: 'application/xml', href: '/sitemap.xml' },
     { rel: 'preconnect', href: 'https://www.sabilytics.com', crossorigin: '' },
     { rel: 'dns-prefetch', href: 'https://www.sabilytics.com' },
   ],
 
   meta: [
-    { name: 'color-scheme', content: 'light' },
+    // 'color-scheme: light' removed so browsers can follow the user's theme.
+    // If your app is light-only, add it back: { name: 'color-scheme', content: 'light' }
     { name: 'theme-color', content: '#0E7C86' },
-    { name: 'apple-mobile-web-app-title', content: 'Ctemz Journal' },
+    { name: 'apple-mobile-web-app-title', content: siteName },
     { name: 'apple-mobile-web-app-capable', content: 'yes' },
     { name: 'mobile-web-app-capable', content: 'yes' },
     { name: 'apple-mobile-web-app-status-bar-style', content: 'default' },
     { name: 'referrer', content: 'strict-origin-when-cross-origin' },
     { name: 'format-detection', content: 'telephone=no' },
-    {
-      name: 'keywords',
-      content:
-        'forex journal, trading journal, forex trading journal, trade journal, trading log, forex trades, trading performance',
-    },
   ],
 
   script: [
     {
+      key: 'ld-website',
       type: 'application/ld+json',
       innerHTML: JSON.stringify({
         '@context': 'https://schema.org',
@@ -61,40 +75,56 @@ useHead({
         },
       }),
     },
-     // ── Analytics ───────────────────────────────────────────────────
     {
+      key: 'ld-app',
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'SoftwareApplication',
+        name: siteName,
+        url: siteUrl,
+        applicationCategory: 'FinanceApplication',
+        operatingSystem: 'Web',
+        description: defaultDescription,
+        offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+      }),
+    },
+    // Analytics
+    {
+      key: 'analytics',
       src: 'https://www.sabilytics.com/script.js',
       async: true,
       'data-site': '0cffnjqpm646',
       'data-domain': 'ctemzjournal.onrender.com',
-      // 'strategy'="afterInteractive",
     },
   ],
 })
 
+// Defaults. Pages can override these (see composables/usePageSeo.ts).
 useSeoMeta({
   title: defaultTitle,
   description: defaultDescription,
-  robots: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
-  author: 'Ctemz Journal',
+  robots,
+  author: siteName,
 
   ogType: 'website',
   ogSiteName: siteName,
   ogTitle: defaultTitle,
   ogDescription: defaultDescription,
   ogUrl: canonical,
-  ogImage: `${siteUrl}/img/og-image.png`,
+  ogImage,
   ogImageType: 'image/png',
   ogImageWidth: 1200,
   ogImageHeight: 630,
-  ogImageAlt: 'Ctemz Journal — Know why you win, and why you lose.',
+  ogImageAlt,
   ogLocale: 'en_US',
 
   twitterCard: 'summary_large_image',
   twitterTitle: defaultTitle,
   twitterDescription: defaultDescription,
-  twitterImage: `${siteUrl}/img/og-image.png`,
-  twitterImageAlt: 'Ctemz Journal — Know why you win, and why you lose.',
+  twitterImage: ogImage,
+  twitterImageAlt: ogImageAlt,
+  // twitterSite: '@yourhandle',
 })
 </script>
 

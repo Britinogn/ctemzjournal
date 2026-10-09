@@ -1,4 +1,3 @@
 User-agent: *
 Allow: /
-
 Sitemap: https://ctemzjournal.onrender.com/sitemap.xml
