@@ -1,3 +1,4 @@
+<!-- pages/auth/signup.vue -->
 <script setup lang="ts">
 import { useQuery } from '@tanstack/vue-query'
 import { siteSettingsKey, type PublicSettings } from '~/types'
@@ -9,7 +10,6 @@ import {
   EyeOffIcon,
   Loading03Icon,
   ArrowLeft01Icon,
-  // CheckmarkCircle01Icon,
 } from '~/utils/icons'
 
 definePageMeta({ middleware: 'guest' })
@@ -28,6 +28,7 @@ const displayName = ref('')
 const email = ref('')
 const password = ref('')
 const showPassword = ref(false)
+const agreed = ref(false)
 const loading = ref(false)
 const error = ref<string | null>(null)
 const { signup } = useAuth()
@@ -35,6 +36,10 @@ const { signup } = useAuth()
 async function onSubmit(): Promise<void> {
   if (loading.value)
     return
+  if (!agreed.value) {
+    error.value = 'Please accept the Terms of Service and Privacy Policy to continue.'
+    return
+  }
   loading.value = true
   error.value = null
   try {
@@ -52,11 +57,9 @@ async function onSubmit(): Promise<void> {
 <template>
   <div class="w-full max-w-md">
     <div class="rounded-2xl border border-border bg-surface p-7 shadow-sm sm:p-8">
-
       <!-- Header -->
       <div class="mb-7">
         <div class="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-          <!-- <HugeiconsIcon :icon="UserIcon" :size="20" /> -->
           <UiAppIcon :icon="UserIcon" :size="18" />
         </div>
         <h1 class="text-2xl font-bold tracking-tight">
@@ -76,7 +79,6 @@ async function onSubmit(): Promise<void> {
           </label>
           <div class="relative">
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted">
-              <!-- <HugeiconsIcon :icon="UserIcon" :size="18" /> -->
               <UiAppIcon :icon="UserIcon" :size="18" />
             </div>
             <input
@@ -99,7 +101,6 @@ async function onSubmit(): Promise<void> {
           </label>
           <div class="relative">
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted">
-              <!-- <HugeiconsIcon :icon="Mail01Icon" :size="18" /> -->
               <UiAppIcon :icon="Mail01Icon" :size="18" />
             </div>
             <input
@@ -123,7 +124,6 @@ async function onSubmit(): Promise<void> {
           </label>
           <div class="relative">
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted">
-              <!-- <HugeiconsIcon :icon="LockKeyIcon" :size="18" /> -->
               <UiAppIcon :icon="LockKeyIcon" :size="18" />
             </div>
             <input
@@ -140,20 +140,41 @@ async function onSubmit(): Promise<void> {
             >
             <button
               type="button"
-              class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-muted transition hover:text-foreground"
+              :aria-label="showPassword ? 'Hide password' : 'Show password'"
+              class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-muted transition hover:text-text"
               @click="showPassword = !showPassword"
             >
-              <!-- <HugeiconsIcon
+              <UiAppIcon
                 :icon="showPassword ? EyeOffIcon : EyeIcon"
                 :size="18"
-              /> -->
-              <UiAppIcon 
-                :icon="showPassword ? EyeOffIcon : EyeIcon"
-                :size="18" 
               />
             </button>
           </div>
         </div>
+
+        <!-- Terms & privacy -->
+        <label class="flex cursor-pointer items-start gap-3 text-sm leading-relaxed text-muted">
+          <input
+            v-model="agreed"
+            type="checkbox"
+            required
+            class="mt-1 h-4 w-4 shrink-0 rounded border-border accent-primary"
+          >
+          <span>
+            I am 18 or older and agree to the
+            <NuxtLink
+              to="/terms"
+              target="_blank"
+              class="font-medium text-primary hover:underline"
+            >Terms of Service</NuxtLink>
+            and
+            <NuxtLink
+              to="/privacy"
+              target="_blank"
+              class="font-medium text-primary hover:underline"
+            >Privacy Policy</NuxtLink>.
+          </span>
+        </label>
 
         <!-- Error -->
         <p
@@ -167,7 +188,7 @@ async function onSubmit(): Promise<void> {
         <!-- Submit -->
         <button
           type="submit"
-          :disabled="loading"
+          :disabled="loading || !agreed"
           class="relative flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-semibold text-on-primary
             transition hover:opacity-90
             disabled:cursor-not-allowed disabled:opacity-50"

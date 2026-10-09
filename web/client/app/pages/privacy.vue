@@ -275,6 +275,11 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
       This policy describes how the service works today and may change as the product evolves.
     </p>
 
+    <p class="mt-8 text-center text-xs text-muted">
+      See also our
+      <NuxtLink to="/terms" class="font-medium text-primary hover:underline">Terms of Use</NuxtLink>.
+    </p>
+
     <!-- Back to top -->
     <Transition
       enter-active-class="transition duration-200"

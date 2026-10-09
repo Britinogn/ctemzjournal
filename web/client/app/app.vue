@@ -100,6 +100,7 @@ useSeoMeta({
 
 <template>
   <div>
+    <NuxtLoadingIndicator />
     <NuxtRouteAnnouncer />
     <NuxtLayout>
       <NuxtPage />

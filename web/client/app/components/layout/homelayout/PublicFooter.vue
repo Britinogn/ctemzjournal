@@ -47,13 +47,27 @@ const socials = computed(() =>
       icon: SOCIAL_ICONS[platform.toLowerCase()] ?? Link02Icon,
     })),
 )
+
+const exploreLinks = [
+  { to: '/journals', label: 'Public journals' },
+  { to: '/prices', label: 'Live prices' },
+  { to: '/about', label: 'About' },
+]
+
+const accountLinks = [
+  { to: '/auth/login', label: 'Log in' },
+  { to: '/auth/signup', label: 'Sign up' },
+  { to: '/dashboard', label: 'Dashboard' },
+]
 </script>
 
 <template>
   <footer class="border-t border-border bg-surface">
-    <div class="mx-auto w-full max-w-6xl px-4 py-12 md:px-6">
-      <div class="grid gap-10 md:grid-cols-[1.5fr_1fr_1fr] md:gap-16">
-        <div>
+    <div class="mx-auto w-full max-w-6xl px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-10 sm:px-6 md:pt-12">
+      <!-- Top: brand + link columns -->
+      <div class="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-[1.5fr_1fr_1fr] md:gap-16">
+        <!-- Brand (full width on mobile) -->
+        <div class="col-span-2 md:col-span-1">
           <BrandLogo :site-name="siteName" :size="150" />
 
           <p v-if="tagline" class="mt-4 max-w-sm text-sm leading-6 text-muted">
@@ -63,12 +77,12 @@ const socials = computed(() =>
           <a
             v-if="contactEmail"
             :href="`mailto:${contactEmail}`"
-            class="mt-4 inline-flex text-sm font-medium text-text transition-colors hover:text-primary"
+            class="mt-4 inline-flex min-h-[44px] items-center break-all text-sm font-medium text-text transition-colors hover:text-primary md:min-h-0"
           >
             {{ contactEmail }}
           </a>
 
-          <div v-if="socials.length > 0" class="mt-5 flex items-center gap-2">
+          <div v-if="socials.length > 0" class="mt-3 flex flex-wrap items-center gap-2.5 md:mt-5">
             <a
               v-for="s in socials"
               :key="s.platform"
@@ -76,65 +90,52 @@ const socials = computed(() =>
               target="_blank"
               rel="noopener noreferrer"
               :aria-label="s.platform"
-              class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-background text-muted transition-all hover:border-primary/40 hover:bg-primary/5 hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              class="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-bg text-muted transition-all hover:border-primary/40 hover:bg-primary/5 hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary md:h-9 md:w-9 md:rounded-lg"
             >
-              <UiAppIcon :icon="s.icon" :size="17" aria-hidden="true" />
+              <UiAppIcon :icon="s.icon" :size="18" aria-hidden="true" />
             </a>
           </div>
         </div>
 
+        <!-- Explore -->
         <nav aria-label="Explore">
           <p class="text-xs font-semibold uppercase tracking-wider text-muted">
             Explore
           </p>
-
-          <ul class="mt-4 space-y-3 text-sm">
-            <li>
-              <NuxtLink to="/journals" class="text-muted transition-colors hover:text-text">
-                Public journals
-              </NuxtLink>
-            </li>
-            <li>
-              <NuxtLink to="/prices" class="text-muted transition-colors hover:text-text">
-                Live prices
-              </NuxtLink>
-            </li>
-            <li>
-              <NuxtLink to="/about" class="text-muted transition-colors hover:text-text">
-                About
+          <ul class="mt-3 text-sm">
+            <li v-for="l in exploreLinks" :key="l.to">
+              <NuxtLink
+                :to="l.to"
+                class="block py-2.5 text-muted transition-colors hover:text-text md:py-1.5"
+              >
+                {{ l.label }}
               </NuxtLink>
             </li>
           </ul>
         </nav>
 
+        <!-- Account -->
         <nav aria-label="Account">
           <p class="text-xs font-semibold uppercase tracking-wider text-muted">
             Account
           </p>
-
-          <ul class="mt-4 space-y-3 text-sm">
-            <li>
-              <NuxtLink to="/auth/login" class="text-muted transition-colors hover:text-text">
-                Log in
-              </NuxtLink>
-            </li>
-            <li>
-              <NuxtLink to="/auth/signup" class="text-muted transition-colors hover:text-text">
-                Sign up
-              </NuxtLink>
-            </li>
-            <li>
-              <NuxtLink to="/dashboard" class="text-muted transition-colors hover:text-text">
-                Dashboard
+          <ul class="mt-3 text-sm">
+            <li v-for="l in accountLinks" :key="l.to">
+              <NuxtLink
+                :to="l.to"
+                class="block py-2.5 text-muted transition-colors hover:text-text md:py-1.5"
+              >
+                {{ l.label }}
               </NuxtLink>
             </li>
           </ul>
         </nav>
       </div>
 
+      <!-- Footer text + risk disclaimer -->
       <div
         v-if="footerText || riskDisclaimer"
-        class="mt-12 border-t border-border pt-6"
+        class="mt-10 space-y-3 border-t border-border pt-6 md:mt-12"
       >
         <p v-if="footerText" class="max-w-3xl text-xs leading-5 text-muted">
           {{ footerText }}
@@ -142,27 +143,38 @@ const socials = computed(() =>
 
         <p
           v-if="riskDisclaimer"
-          class="mt-3 max-w-4xl text-xs leading-5 text-muted/80"
+          class="max-w-4xl rounded-xl bg-bg p-3.5 text-xs leading-5 text-muted/90 md:rounded-none md:bg-transparent md:p-0"
         >
           <span class="font-medium text-muted">Risk disclaimer:</span>
           {{ riskDisclaimer }}
         </p>
       </div>
 
-      <div class="mt-8 flex flex-col gap-3 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between">
-        <p class="text-xs text-muted">
-          © {{ new Date().getFullYear() }} {{ siteName }}. All rights reserved.
-        </p>
-
-        <div class="flex items-center gap-4 text-xs text-muted">
-          <NuxtLink to="/privacy" class="transition-colors hover:text-text">
+      <!-- Bottom bar -->
+      <div class="mt-8 flex flex-col items-center gap-3 border-t border-border pt-6 text-center sm:flex-row sm:justify-between sm:text-left">
+        <div class="flex items-center gap-6 text-xs text-muted sm:order-last">
+          <NuxtLink
+            to="/privacy"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="py-2 transition-colors hover:text-text"
+          >
             Privacy
           </NuxtLink>
 
-          <NuxtLink to="/terms" class="transition-colors hover:text-text">
+          <NuxtLink
+            to="/terms"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="py-2 transition-colors hover:text-text"
+          >
             Terms
           </NuxtLink>
         </div>
+
+        <p class="text-xs text-muted">
+          © {{ new Date().getFullYear() }} {{ siteName }}. All rights reserved.
+        </p>
       </div>
     </div>
   </footer>
