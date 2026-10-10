@@ -22,7 +22,7 @@ type PublicSettings struct {
 }
 
 // PublicJournal is one recent public trade for the home page.
-// Money amounts, lot size and notes are NEVER included.
+// Money amounts and lot size are NEVER included.
 type PublicJournal struct {
 	ID          string   `json:"id"`
 	DisplayName *string  `json:"display_name"`
@@ -34,4 +34,20 @@ type PublicJournal struct {
 	RMultiple   *float64 `json:"r_multiple"`
 	ImageURL    *string  `json:"image_url"` // first image, signed URL
 	Date        string   `json:"date"`
+}
+
+// PublicJournalImage is one signed trade image on the journal detail page.
+type PublicJournalImage struct {
+	URL  string  `json:"url"`
+	Kind *string `json:"kind,omitempty"`
+}
+
+// PublicJournalDetail is the GET /public/journals/{id} shape: the public
+// fields plus the trader's notes and every image. Money and lots stay out.
+// Notes here are public to anyone on the internet — the trader opted in by
+// making the trade public.
+type PublicJournalDetail struct {
+	PublicJournal
+	Notes  *string              `json:"notes"`
+	Images []PublicJournalImage `json:"images"`
 }

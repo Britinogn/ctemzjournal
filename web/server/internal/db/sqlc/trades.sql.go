@@ -226,6 +226,83 @@ func (q *Queries) ExportTradesByUser(ctx context.Context, userID uuid.UUID) ([]T
 	return items, nil
 }
 
+const getPublicJournal = `-- name: GetPublicJournal :one
+select t.id, t.user_id, t.account_id, t.setup_id, t.pair, t.direction, t.timeframe, t.opened_at, t.closed_at, t.entry, t.stop_loss, t.take_profit, t.exit_price, t.lot_size, t.commission, t.swap, t.risk_amount, t.pnl, t.r_multiple, t.followed_rules, t.emotion, t.notes, t.status, t.is_public, t.hidden_by_admin, t.created_at, t.updated_at, p.display_name, s.name as setup_name
+from trades t
+join profiles p on p.id = t.user_id
+left join setups s on s.id = t.setup_id
+where t.id = $1 and t.is_public = true and t.hidden_by_admin = false
+`
+
+type GetPublicJournalRow struct {
+	ID            uuid.UUID
+	UserID        uuid.UUID
+	AccountID     uuid.UUID
+	SetupID       pgtype.UUID
+	Pair          string
+	Direction     string
+	Timeframe     pgtype.Text
+	OpenedAt      pgtype.Timestamptz
+	ClosedAt      pgtype.Timestamptz
+	Entry         pgtype.Numeric
+	StopLoss      pgtype.Numeric
+	TakeProfit    pgtype.Numeric
+	ExitPrice     pgtype.Numeric
+	LotSize       pgtype.Numeric
+	Commission    pgtype.Numeric
+	Swap          pgtype.Numeric
+	RiskAmount    pgtype.Numeric
+	Pnl           pgtype.Numeric
+	RMultiple     pgtype.Numeric
+	FollowedRules pgtype.Bool
+	Emotion       pgtype.Text
+	Notes         pgtype.Text
+	Status        string
+	IsPublic      bool
+	HiddenByAdmin bool
+	CreatedAt     pgtype.Timestamptz
+	UpdatedAt     pgtype.Timestamptz
+	DisplayName   pgtype.Text
+	SetupName     pgtype.Text
+}
+
+func (q *Queries) GetPublicJournal(ctx context.Context, id uuid.UUID) (GetPublicJournalRow, error) {
+	row := q.db.QueryRow(ctx, getPublicJournal, id)
+	var i GetPublicJournalRow
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.AccountID,
+		&i.SetupID,
+		&i.Pair,
+		&i.Direction,
+		&i.Timeframe,
+		&i.OpenedAt,
+		&i.ClosedAt,
+		&i.Entry,
+		&i.StopLoss,
+		&i.TakeProfit,
+		&i.ExitPrice,
+		&i.LotSize,
+		&i.Commission,
+		&i.Swap,
+		&i.RiskAmount,
+		&i.Pnl,
+		&i.RMultiple,
+		&i.FollowedRules,
+		&i.Emotion,
+		&i.Notes,
+		&i.Status,
+		&i.IsPublic,
+		&i.HiddenByAdmin,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DisplayName,
+		&i.SetupName,
+	)
+	return i, err
+}
+
 const getTrade = `-- name: GetTrade :one
 select id, user_id, account_id, setup_id, pair, direction, timeframe, opened_at, closed_at, entry, stop_loss, take_profit, exit_price, lot_size, commission, swap, risk_amount, pnl, r_multiple, followed_rules, emotion, notes, status, is_public, hidden_by_admin, created_at, updated_at from trades where id = $1 and user_id = $2
 `

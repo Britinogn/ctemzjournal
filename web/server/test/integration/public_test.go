@@ -14,6 +14,7 @@ import (
 	"github.com/britinogn/ctemzjournal/test/fixtures"
 	"github.com/britinogn/ctemzjournal/test/helpers"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 )
 
 type stubRates struct {
@@ -129,5 +130,53 @@ func TestPublicSiteSettingsAndRates(t *testing.T) {
 	}
 	if resp.UpdatedAt == nil {
 		t.Fatalf("rates missing updated_at")
+	}
+}
+
+func TestPublicJournalDetail(t *testing.T) {
+	env, ctx := newPublicEnv(t)
+
+	notes := "Waited for the London sweep, then entered on the retest."
+	entry, sl, exit, lots := 1.0850, 1.0800, 1.0950, 1.0
+	trade, err := env.trades.Create(ctx, env.user, service.TradeCreate{
+		AccountID: env.account, Pair: "EUR/USD", Direction: "long",
+		Entry: &entry, StopLoss: &sl, ExitPrice: &exit, LotSize: &lots,
+		Notes: &notes, Status: "closed",
+	})
+	if err != nil {
+		t.Fatalf("seed trade: %v", err)
+	}
+	// Private trades are undisclosed.
+	if _, err := env.public.Journal(ctx, trade.ID); !errors.Is(err, pgx.ErrNoRows) {
+		t.Fatalf("private trade disclosed: %v", err)
+	}
+
+	if _, err := env.trades.SetVisibility(ctx, trade.ID, env.user, true); err != nil {
+		t.Fatalf("visibility: %v", err)
+	}
+	j, err := env.public.Journal(ctx, trade.ID)
+	if err != nil {
+		t.Fatalf("journal: %v", err)
+	}
+	if j.Notes == nil || *j.Notes != notes {
+		t.Fatalf("journal notes: %+v", j)
+	}
+	if j.Pair != "EUR/USD" || j.Result == nil || *j.Result != "win" {
+		t.Fatalf("journal fields: %+v", j)
+	}
+	if j.Images == nil {
+		t.Fatalf("journal images not initialized: %+v", j)
+	}
+	// Money and lots stay out even on detail.
+	raw, _ := json.Marshal(j)
+	for _, leaked := range []string{"pnl", "lot_size", "commission", "entry", "risk_amount", "swap"} {
+		if strings.Contains(strings.ToLower(string(raw)), `"`+leaked) {
+			t.Fatalf("leaked field %q in %s", leaked, raw)
+		}
+	}
+
+	// Unknown ids are undisclosed too.
+	if _, err := env.public.Journal(ctx, uuid.New()); !errors.Is(err, pgx.ErrNoRows) {
+		t.Fatalf("missing trade disclosed: %v", err)
 	}
 }

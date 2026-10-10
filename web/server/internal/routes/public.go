@@ -6,11 +6,12 @@ import (
 )
 
 // MountPublic registers the home-page endpoints (no auth):
-// /public/site-settings, /public/journals, /public/rates.
+// /public/site-settings, /public/journals, /public/journals/{id}, /public/rates.
 func MountPublic(r chi.Router, h *handler.Public) {
 	r.Route("/public", func(r chi.Router) {
 		r.Get("/site-settings", h.SiteSettings)
 		r.Get("/journals", h.Journals)
+		r.Get("/journals/{id}", h.JournalDetail)
 		r.Get("/rates", h.Rates)
 	})
 }

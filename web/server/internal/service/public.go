@@ -10,6 +10,7 @@ import (
 	"github.com/britinogn/ctemzjournal/internal/model"
 	"github.com/britinogn/ctemzjournal/internal/rates"
 	"github.com/britinogn/ctemzjournal/internal/repository"
+	"github.com/google/uuid"
 )
 
 // Public serves the home-page endpoints (no auth): site settings,
@@ -73,7 +74,7 @@ func (s *Public) SiteSettings(ctx context.Context) (model.PublicSettings, error)
 
 // Journals returns recent public trades projected to the safe public shape:
 // display name, pair, direction, setup, win/loss, R-multiple, first signed
-// image, date. Money, lots and notes never leave the server.
+// image, date. Money and lots never leave the server (notes only on detail).
 func (s *Public) Journals(ctx context.Context, limit, offset int32) ([]model.PublicJournal, error) {
 	if limit < 1 || limit > 50 {
 		limit = 20
@@ -118,6 +119,58 @@ func (s *Public) Journals(ctx context.Context, limit, offset int32) ([]model.Pub
 		out = append(out, j)
 	}
 	return out, nil
+}
+
+// Journal returns one public trade with notes + every image for the detail
+// page. Private, missing or admin-hidden trades are pgx.ErrNoRows — the
+// handler maps that to 404 so existence stays undisclosed.
+func (s *Public) Journal(ctx context.Context, id uuid.UUID) (model.PublicJournalDetail, error) {
+	row, err := s.queries.GetPublicJournal(ctx, id)
+	if err != nil {
+		return model.PublicJournalDetail{}, err
+	}
+	j := model.PublicJournalDetail{
+		PublicJournal: model.PublicJournal{
+			ID:          row.ID.String(),
+			DisplayName: textVal(row.DisplayName),
+			Pair:        row.Pair,
+			Direction:   row.Direction,
+			Timeframe:   textVal(row.Timeframe),
+			SetupName:   textVal(row.SetupName),
+		},
+		Notes:  textVal(row.Notes),
+		Images: []model.PublicJournalImage{},
+	}
+	if row.Pnl.Valid {
+		result := "loss"
+		if numericFloat(row.Pnl) > 0 {
+			result = "win"
+		}
+		j.Result = &result
+	}
+	if row.RMultiple.Valid {
+		j.RMultiple = ptr(numericFloat(row.RMultiple))
+	}
+	if images, err := s.images.ListByTrade(ctx, row.ID); err == nil {
+		for _, img := range images {
+			u, err := s.storage.DeliveryURL(img.PublicID)
+			if err != nil {
+				continue
+			}
+			kind := textVal(img.Kind)
+			j.Images = append(j.Images, model.PublicJournalImage{URL: u, Kind: kind})
+		}
+	}
+	if len(j.Images) > 0 {
+		first := j.Images[0].URL
+		j.ImageURL = &first
+	}
+	date := row.CreatedAt.Time
+	if row.ClosedAt.Valid {
+		date = row.ClosedAt.Time
+	}
+	j.Date = date.UTC().Format(time.RFC3339)
+	return j, nil
 }
 
 // Rates returns the cached prices with updated_at and the stale flag.

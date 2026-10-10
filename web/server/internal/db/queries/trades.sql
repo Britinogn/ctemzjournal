@@ -90,6 +90,13 @@ where t.is_public = true and t.hidden_by_admin = false
 order by t.created_at desc
 limit $1 offset $2;
 
+-- name: GetPublicJournal :one
+select t.*, p.display_name, s.name as setup_name
+from trades t
+join profiles p on p.id = t.user_id
+left join setups s on s.id = t.setup_id
+where t.id = $1 and t.is_public = true and t.hidden_by_admin = false;
+
 -- name: ListAdminJournals :many
 select t.*, p.display_name, s.name as setup_name
 from trades t
