@@ -1,6 +1,7 @@
 /**
- * Public home-page shapes. Journals carry ONLY safe fields —
- * no money amounts, lot sizes or notes ever arrive here.
+ * Public home-page shapes. List journals carry ONLY safe fields —
+ * no money amounts or lot sizes ever arrive here. Notes + all images
+ * arrive only on GET /public/journals/{id} (public by owner choice).
  */
 
 export interface PublicSettings {
@@ -32,7 +33,17 @@ export interface PublicJournal {
   /** First image, signed URL. Null when the trade has no images. */
   image_url: string | null;
   date: string;
-  // note: string
+}
+
+export interface PublicJournalImage {
+  url: string;
+  kind?: string | null;
+}
+
+/** GET /public/journals/{id} — public fields plus notes + every image. */
+export interface PublicJournalDetail extends PublicJournal {
+  notes: string | null;
+  images: PublicJournalImage[] | null;
 }
 
 export interface Rate {

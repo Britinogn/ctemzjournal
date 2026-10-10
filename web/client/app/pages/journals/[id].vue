@@ -1,19 +1,11 @@
 <script setup lang="ts">
 import { useQuery } from '@tanstack/vue-query'
-import type { PublicJournal } from '~/types'
+import type { PublicJournalDetail } from '~/types'
 import { fmtR } from '~/utils/format'
 
 definePageMeta({ layout: 'public' })
 
-// The notes and the full picture list are not on your PublicJournal type yet. The API has to send them (see the reply).
-interface JournalImage {
-  url: string
-  kind?: string | null
-}
-type JournalDetail = PublicJournal & {
-  notes?: string | null
-  images?: JournalImage[] | null
-}
+type JournalDetail = PublicJournalDetail
 
 const route = useRoute()
 const id = computed(() => String(route.params.id ?? ''))
