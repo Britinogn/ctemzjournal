@@ -19,9 +19,10 @@ func NewAuth(auth *repository.Auth, profiles *repository.Profiles) *Auth {
 }
 
 // Sync ensures the profile exists (the handle_new_user trigger usually
-// creates it) and returns it.
-func (s *Auth) Sync(ctx context.Context, userID uuid.UUID, displayName string) (sqlc.Profile, error) {
-	if err := s.auth.EnsureProfile(ctx, userID, displayName); err != nil {
+// creates it) and returns it. timezone is only applied on insert — an
+// existing custom timezone is never overwritten by a later login.
+func (s *Auth) Sync(ctx context.Context, userID uuid.UUID, displayName, timezone string) (sqlc.Profile, error) {
+	if err := s.auth.EnsureProfile(ctx, userID, displayName, normalizeTimezone(timezone)); err != nil {
 		return sqlc.Profile{}, err
 	}
 	return s.profiles.GetByID(ctx, userID)

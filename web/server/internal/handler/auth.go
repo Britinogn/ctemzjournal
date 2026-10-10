@@ -17,6 +17,7 @@ func NewAuth(svc *service.Auth) *Auth { return &Auth{svc: svc} }
 
 type syncRequest struct {
 	DisplayName string `json:"display_name"`
+	Timezone    string `json:"timezone"`
 }
 
 func (h *Auth) Sync(w http.ResponseWriter, r *http.Request) {
@@ -31,7 +32,7 @@ func (h *Auth) Sync(w http.ResponseWriter, r *http.Request) {
 	if r.Body != nil {
 		_ = response.Decode(r, &req)
 	}
-	profile, err := h.svc.Sync(r.Context(), uid, req.DisplayName)
+	profile, err := h.svc.Sync(r.Context(), uid, req.DisplayName, req.Timezone)
 	if err != nil {
 		response.Error(w, http.StatusInternalServerError, "Could not set up your account. Please try again.")
 		return

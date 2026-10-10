@@ -64,6 +64,14 @@ func (h *Me) Patch(w http.ResponseWriter, r *http.Request) {
 		AvatarPath:  req.AvatarPath,
 	})
 	if err != nil {
+		if err.Error() == "invalid timezone" {
+			response.Error(w, http.StatusBadRequest, "That timezone is not recognized.")
+			return
+		}
+		if err.Error() == "invalid avatar url" || err.Error() == "invalid avatar" {
+			response.Error(w, http.StatusBadRequest, "That picture is not valid. Upload an image.")
+			return
+		}
 		response.Error(w, http.StatusInternalServerError, "update failed")
 		return
 	}

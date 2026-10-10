@@ -18,10 +18,13 @@ type Auth struct {
 func NewAuth(pool *pgxpool.Pool) *Auth { return &Auth{pool: pool} }
 
 // EnsureProfile inserts the profile row if missing and returns its id.
-func (a *Auth) EnsureProfile(ctx context.Context, id uuid.UUID, displayName string) error {
+// timezone must already be normalized (valid IANA, never empty) — the
+// insert is a no-op for existing rows so later logins never overwrite a
+// user's chosen timezone.
+func (a *Auth) EnsureProfile(ctx context.Context, id uuid.UUID, displayName, timezone string) error {
 	_, err := a.pool.Exec(ctx,
-		`insert into profiles (id, display_name) values ($1, $2) on conflict (id) do nothing`,
-		id, displayName)
+		`insert into profiles (id, display_name, timezone) values ($1, $2, $3) on conflict (id) do nothing`,
+		id, displayName, timezone)
 	if err == pgx.ErrNoRows {
 		return nil
 	}
