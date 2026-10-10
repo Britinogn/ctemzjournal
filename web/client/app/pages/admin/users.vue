@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { useQuery, useQueryClient } from '@tanstack/vue-query'
+import { useQuery } from '@tanstack/vue-query'
 import { toast } from 'vue-sonner'
 import { adminUsersKey, meKey, type AdminUser } from '~/types'
 
 definePageMeta({ middleware: 'admin', layout: 'admin' })
 
 const api = useApi()
-const queryClient = useQueryClient()
+// const queryClient = useQueryClient()
 const search = ref('')
 const debounced = ref('')
 const page = ref(0)
@@ -95,7 +95,7 @@ function fmtDate(iso: string): string {
 
     <section v-else class="overflow-hidden rounded-2xl border border-border bg-surface" aria-label="Users">
       <div class="overflow-x-auto">
-        <table class="w-full min-w-[760px] text-left text-sm">
+        <table class="w-full min-w-190 text-left text-sm">
           <thead>
             <tr class="border-b border-border text-xs text-muted">
               <th class="px-4 py-2.5 font-medium">User</th>

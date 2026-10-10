@@ -26,7 +26,7 @@ export function useAuth() {
     // Browser zone so new profiles skip the Lagos default. The backend only
     // applies this on insert — existing custom timezones are never overwritten.
     body.timezone = timezone || detectBrowserTimezone()
-    await api.post<Profile>('/auth/sync', body)
+    await api.post<Profile>('/auth/sync', {...body})
     const me = await api.get<Profile>('/me')
     await navigateTo(me.Role === 'admin' ? '/admin' : '/dashboard')
     return me
@@ -53,7 +53,8 @@ export function useAuth() {
     // Catch it here instead of stranding them on /auth/verify-email.
     const identities = (data.user as unknown as { identities?: unknown[] } | null)?.identities
     if (data.user && Array.isArray(identities) && identities.length === 0)
-      throw new Error('This email is already registered — log in instead.')
+      // throw new Error('This email is already registered — log in instead.')
+    throw new Error('An account with this email already exists. Try logging in instead.')
     if (!data.session) {
       await navigateTo('/auth/verify-email')
       return
