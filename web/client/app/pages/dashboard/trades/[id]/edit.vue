@@ -2,6 +2,7 @@
 import { useQuery, useQueryClient } from '@tanstack/vue-query'
 import { toast } from 'vue-sonner'
 import type { PendingImage, Trade, TradeCreate, TradeImageWithUrl, TradeUpdate } from '~/types'
+import { toDatetimeLocalIn } from '~/utils/format'
 import { NoteIcon, ArrowLeft01Icon } from '~/utils/icons'
 
 definePageMeta({ middleware: 'auth', layout: 'dashboard' })
@@ -13,6 +14,7 @@ const queryClient = useQueryClient()
 const { data: accounts } = useAccounts()
 const { data: setups } = useSetups()
 const { data: tags } = useTags()
+const { timezone } = useUserTimezone()
 
 // The keys are computed, so moving from one trade to another refetches instead of showing the old one.
 const { data: trade, isPending, isError } = useQuery({
@@ -25,13 +27,9 @@ const { data: images, refetch: refetchImages } = useQuery({
   queryFn: () => api.get<TradeImageWithUrl[]>(`/trades/${tradeId.value}/images`),
 })
 
-/** Backend ISO → datetime-local value. */
+/** Backend ISO → datetime-local value in the profile timezone. */
 function toLocalInput(iso: string | null): string {
-  if (!iso)
-    return ''
-  const d = new Date(iso)
-  const pad = (n: number): string => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+  return toDatetimeLocalIn(iso, timezone.value)
 }
 
 const initial = computed(() => {
@@ -262,6 +260,7 @@ const skel = 'animate-pulse rounded-2xl border border-border bg-surface'
           :tags="tags ?? []"
           :initial="initial"
           :saving="saving"
+          :timezone="timezone"
           submit-label="Save changes"
           @submit="onSubmit"
           @cancel="navigateTo(`/dashboard/trades/${tradeId}`)"

@@ -65,7 +65,7 @@ const itemCls
       :class="open ? 'ring-2 ring-primary/40' : ''"
       @click="open = !open"
     >
-      <LayoutUserlayoutUserAvatar :name="profile?.DisplayName" :size="36" />
+      <LayoutUserlayoutUserAvatar :name="profile?.DisplayName" :src="profile?.AvatarPath" :rev="profile?.UpdatedAt" :size="36" />
     </button>
 
     <!-- Settings is not here: the sidebar tab and the bottom "More" tab already lead to it. -->
@@ -78,7 +78,7 @@ const itemCls
       ]"
     >
       <div class="flex items-center gap-3 border-b border-border px-4 py-3">
-        <LayoutUserlayoutUserAvatar :name="profile?.DisplayName" :size="36" />
+        <LayoutUserlayoutUserAvatar :name="profile?.DisplayName" :src="profile?.AvatarPath" :rev="profile?.UpdatedAt" :size="36" />
         <div class="min-w-0">
           <p class="truncate text-sm font-semibold leading-tight">
             {{ profile?.DisplayName || 'Trader' }}

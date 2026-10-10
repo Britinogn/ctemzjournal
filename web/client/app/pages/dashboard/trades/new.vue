@@ -9,6 +9,7 @@ const api = useApi()
 const { data: accounts } = useAccounts()
 const { data: setups } = useSetups()
 const { data: tags } = useTags()
+const { timezone } = useUserTimezone()
 
 const saving = ref(false)
 const uploadStatus = ref('')
@@ -101,6 +102,7 @@ const panel = 'rounded-2xl border border-border bg-surface p-4 md:p-5'
         :setups="setups ?? []"
         :tags="tags ?? []"
         :saving="saving"
+        :timezone="timezone"
         submit-label="Save trade"
         @submit="onSubmit"
         @cancel="navigateTo('/dashboard/trades')"

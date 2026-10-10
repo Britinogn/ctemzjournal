@@ -110,7 +110,7 @@ function fmtDate(iso: string): string {
             <tr v-for="u in users ?? []" :key="u.ID">
               <td class="px-4 py-2.5">
                 <div class="flex items-center gap-2.5">
-                  <LayoutUserlayoutUserAvatar :name="u.DisplayName" :size="34" />
+                  <LayoutUserlayoutUserAvatar :name="u.DisplayName" :src="u.AvatarPath" :rev="u.UpdatedAt" :size="34" />
                   <div class="min-w-0">
                     <p class="truncate font-medium">
                       {{ u.DisplayName || '—' }}<span v-if="u.ID === me?.ID" class="text-muted">(you)</span>

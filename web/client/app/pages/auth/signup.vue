@@ -2,6 +2,7 @@
 <script setup lang="ts">
 import { useQuery } from '@tanstack/vue-query'
 import { siteSettingsKey, type PublicSettings } from '~/types'
+import { detectBrowserTimezone } from '~/utils/timezones'
 import {
   UserIcon,
   Mail01Icon,
@@ -44,7 +45,7 @@ async function onSubmit(): Promise<void> {
   loading.value = true
   error.value = null
   try {
-    await signup(email.value.trim(), password.value, displayName.value.trim() || undefined)
+    await signup(email.value.trim(), password.value, displayName.value.trim() || undefined, detectBrowserTimezone())
   }
   catch (err) {
     error.value = err instanceof Error ? err.message : 'Signup failed'

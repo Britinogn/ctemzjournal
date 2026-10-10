@@ -9,7 +9,7 @@ import {
   Wallet01Icon,
 } from '~/utils/icons'
 import { dashboardKey, meKey, setupsKey, type DashboardOverview, type Profile, type Setup } from '~/types'
-import { fmtMoney, fmtPct, fmtR } from '~/utils/format'
+import { fmtMoney, fmtPct, fmtR, hourInTimezone } from '~/utils/format'
 
 definePageMeta({ middleware: 'auth', layout: 'dashboard' })
 
@@ -53,12 +53,14 @@ const { data: me } = useQuery({
 })
 const firstName = computed(() => (me.value?.DisplayName ?? '').trim().split(/\s+/)[0] ?? '')
 
-// The time of day is read in the browser only, so the server and browser can never disagree.
+// The hour is read in the profile timezone, so the greeting matches the trader's day.
 const greeting = ref('Welcome back')
-onMounted(() => {
-  const h = new Date().getHours()
+function updateGreeting(): void {
+  const h = hourInTimezone(me.value?.Timezone || Intl.DateTimeFormat().resolvedOptions().timeZone)
   greeting.value = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'
-})
+}
+onMounted(updateGreeting)
+watch(() => me.value?.Timezone, updateGreeting)
 
 // One line that changes with where the trader is, with no random picks, so it stays steady between visits.
 const tagline = computed(() => {

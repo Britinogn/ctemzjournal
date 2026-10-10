@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import imageCompression from 'browser-image-compression'
 import type { Account, PendingImage, Setup, Tag, TradeCreate, TradeDraft } from '~/types'
+import { fromDatetimeLocalToISO } from '~/utils/format'
+import { detectBrowserTimezone } from '~/utils/timezones'
 
 const props = withDefaults(defineProps<{
   accounts: Account[];
@@ -9,10 +11,15 @@ const props = withDefaults(defineProps<{
   initial?: Partial<TradeDraft>;
   saving?: boolean;
   submitLabel?: string;
+  /** Profile timezone — typed wall times are interpreted in this zone. */
+  timezone?: string;
 }>(), {
   saving: false,
   submitLabel: 'Save trade',
+  timezone: '',
 })
+
+const tz = computed(() => props.timezone || detectBrowserTimezone())
 
 const emit = defineEmits<{
   submit: [input: TradeCreate, images: PendingImage[], makePublic: boolean];
@@ -167,7 +174,7 @@ function onSubmit(): void {
   if (draft.timeframe)
     input.timeframe = draft.timeframe
   if (draft.opened_at)
-    input.opened_at = new Date(draft.opened_at).toISOString()
+    input.opened_at = fromDatetimeLocalToISO(draft.opened_at, tz.value)
   const entry = numOrUndef(draft.entry)
   const stopLoss = numOrUndef(draft.stop_loss)
   const takeProfit = numOrUndef(draft.take_profit)
@@ -268,6 +275,7 @@ const labelCls = 'mb-1.5 block text-sm font-medium'
                 id="tf-opened" v-model="draft.opened_at" type="datetime-local"
                 :class="`${inputCls} tnum`"
               >
+              <p class="mt-1 text-[11px] text-muted">Times are in {{ tz }}.</p>
             </div>
           </div>
         </section>

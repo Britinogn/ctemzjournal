@@ -1,14 +1,18 @@
 <script setup lang="ts">
 import { useQuery, useQueryClient } from '@tanstack/vue-query'
 import { toast } from 'vue-sonner'
+import imageCompression from 'browser-image-compression'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { Logout02Icon, Moon02Icon, Sun03Icon, Tag01Icon, Target01Icon, Wallet01Icon } from '~/utils/icons'
 import { dashboardKey, meKey, type Profile, type ProfileUpdate } from '~/types'
+import { DEFAULT_TIMEZONE, timezoneOptions } from '~/utils/timezones'
+import { AVATAR_BUCKET, avatarStoragePath, resolveAvatarUrl } from '~/utils/avatar'
 
 definePageMeta({ middleware: 'auth', layout: 'dashboard' })
 
 const api = useApi()
 const queryClient = useQueryClient()
+const config = useRuntimeConfig()
 const { $supabase } = useNuxtApp() as unknown as { $supabase: SupabaseClient }
 const { logout } = useAuth()
 const colorMode = useColorMode()
@@ -20,22 +24,13 @@ const { data: me, isPending } = useQuery({
 })
 
 const displayName = ref('')
-const timezone = ref('Africa/Lagos')
+const timezone = ref(DEFAULT_TIMEZONE)
+const avatarPath = ref('')
+const avatarBroken = ref(false)
+const uploadingAvatar = ref(false)
 const saving = ref(false)
 const email = ref('')
 const signingOut = ref(false)
-
-const TIMEZONES = [
-  'Africa/Lagos',
-  'UTC',
-  'Europe/London',
-  'Europe/Berlin',
-  'America/New_York',
-  'America/Chicago',
-  'Asia/Dubai',
-  'Asia/Tokyo',
-  'Australia/Sydney',
-]
 
 const THEMES = [
   { value: 'light', label: 'Light', icon: Sun03Icon },
@@ -53,9 +48,80 @@ const LISTS = [
 watchEffect(() => {
   if (me.value) {
     displayName.value = me.value.DisplayName ?? ''
-    timezone.value = me.value.Timezone || 'Africa/Lagos'
+    timezone.value = me.value.Timezone || DEFAULT_TIMEZONE
+    avatarPath.value = me.value.AvatarPath ?? ''
+    avatarBroken.value = false
   }
 })
+
+const tzOptions = computed(() => timezoneOptions(timezone.value))
+const avatarUrl = computed(() => resolveAvatarUrl(String(config.public.supabaseUrl || ''), avatarPath.value, me.value?.UpdatedAt))
+const showAvatar = computed(() => avatarUrl.value !== '' && !avatarBroken.value)
+
+/** Upload a profile picture: compress → avatars/{userId}/avatar.webp → PATCH /me. */
+async function onAvatarFile(event: Event): Promise<void> {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  input.value = ''
+  if (!file || uploadingAvatar.value || !me.value)
+    return
+  if (!file.type.startsWith('image/')) {
+    toast.error('Choose an image file')
+    return
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    toast.error('Image too large — max 5 MB')
+    return
+  }
+  uploadingAvatar.value = true
+  try {
+    const compressed = await imageCompression(file, {
+      maxSizeMB: 0.5,
+      maxWidthOrHeight: 512,
+      fileType: 'image/webp',
+    })
+    const webp = new File([compressed], 'avatar.webp', { type: 'image/webp' })
+    const path = avatarStoragePath(me.value.ID)
+    const { error } = await $supabase.storage
+      .from(AVATAR_BUCKET)
+      .upload(path, webp, { upsert: true, contentType: 'image/webp' })
+    if (error)
+      throw new Error(error.message)
+    const updated = await api.patch<Profile>('/me', { avatar_path: path })
+    queryClient.setQueryData(meKey(), updated)
+    avatarPath.value = updated.AvatarPath ?? path
+    avatarBroken.value = false
+    toast.success('Profile picture updated')
+  }
+  catch (err) {
+    toast.error(err instanceof Error ? err.message : 'Upload failed — try again')
+  }
+  finally {
+    uploadingAvatar.value = false
+  }
+}
+
+async function onRemoveAvatar(): Promise<void> {
+  if (uploadingAvatar.value || !me.value || !avatarPath.value)
+    return
+  uploadingAvatar.value = true
+  try {
+    // Best-effort storage cleanup — legacy http(s) URLs have no stored file.
+    if (!/^https?:\/\//i.test(avatarPath.value)) {
+      await $supabase.storage.from(AVATAR_BUCKET).remove([avatarPath.value])
+    }
+    const updated = await api.patch<Profile>('/me', { avatar_path: '' })
+    queryClient.setQueryData(meKey(), updated)
+    avatarPath.value = ''
+    toast.success('Profile picture removed')
+  }
+  catch {
+    toast.error('Could not remove picture')
+  }
+  finally {
+    uploadingAvatar.value = false
+  }
+}
 
 onMounted(async () => {
   const { data: { session } } = await $supabase.auth.getSession()
@@ -65,13 +131,19 @@ onMounted(async () => {
 const memberSince = computed(() => {
   if (!me.value?.CreatedAt)
     return '—'
-  return new Date(me.value.CreatedAt).toLocaleDateString('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' })
+  const tz = me.value?.Timezone || timezone.value || DEFAULT_TIMEZONE
+  try {
+    return new Date(me.value.CreatedAt).toLocaleDateString('en-GB', { month: 'short', year: 'numeric', timeZone: tz })
+  }
+  catch {
+    return new Date(me.value.CreatedAt).toLocaleDateString('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' })
+  }
 })
 
-// The save button wakes up only when something has changed.
+// The save button wakes up only when name/timezone changed (picture saves instantly).
 const dirty = computed(() =>
   displayName.value.trim() !== (me.value?.DisplayName ?? '')
-  || timezone.value !== (me.value?.Timezone || 'Africa/Lagos'),
+  || timezone.value !== (me.value?.Timezone || DEFAULT_TIMEZONE),
 )
 
 async function onSave(): Promise<void> {
@@ -152,7 +224,7 @@ const skel = 'animate-pulse rounded-2xl border border-border bg-surface'
     </div>
 
     <div v-else class="grid items-start gap-4 md:grid-cols-2">
-      <!-- Profile (everything PATCH /me supports, minus avatar upload) -->
+      <!-- Profile (display name + timezone + profile picture) -->
       <section :class="cardCls" aria-label="Profile">
         <h2 class="text-sm font-semibold">
           Profile
@@ -161,6 +233,44 @@ const skel = 'animate-pulse rounded-2xl border border-border bg-surface'
           Display name shows on your public journals. Calendar days group in this timezone.
         </p>
         <form class="mt-5 space-y-4" @submit.prevent="onSave">
+          <div class="flex items-center gap-3">
+            <img
+              v-if="showAvatar"
+              :src="avatarUrl"
+              alt="Your profile picture"
+              class="h-12 w-12 rounded-full object-cover"
+              @error="avatarBroken = true"
+            >
+            <span
+              v-else
+              class="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/15 font-semibold text-primary"
+              aria-hidden="true"
+            >
+              {{ (displayName.trim()?.[0] ?? 'T').toUpperCase() }}
+            </span>
+            <div class="min-w-0 flex-1">
+              <p class="truncate text-sm font-semibold">
+                {{ displayName.trim() || 'Trader' }}
+              </p>
+              <div class="mt-1 flex gap-2">
+                <label
+                  class="inline-flex h-9 cursor-pointer items-center rounded-xl border border-border px-3 text-xs font-semibold transition hover:border-primary hover:text-primary"
+                >
+                  <input type="file" accept="image/png,image/jpeg,image/webp" class="sr-only" :disabled="uploadingAvatar" @change="onAvatarFile">
+                  {{ uploadingAvatar ? 'Uploading…' : showAvatar ? 'Change picture' : 'Upload picture' }}
+                </label>
+                <button
+                  v-if="showAvatar"
+                  type="button"
+                  :disabled="uploadingAvatar"
+                  class="inline-flex h-9 items-center rounded-xl border border-border px-3 text-xs font-semibold text-muted transition hover:text-text disabled:opacity-50"
+                  @click="onRemoveAvatar"
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+          </div>
           <div>
             <label for="settings-name" class="mb-1.5 block text-sm font-medium">Display name</label>
             <input
@@ -176,7 +286,7 @@ const skel = 'animate-pulse rounded-2xl border border-border bg-surface'
             <label for="settings-tz" class="mb-1.5 block text-sm font-medium">Timezone</label>
             <div class="relative">
               <select id="settings-tz" v-model="timezone" :class="[inputCls, 'appearance-none pr-10']">
-                <option v-for="tz in TIMEZONES" :key="tz" :value="tz">
+                <option v-for="tz in tzOptions" :key="tz" :value="tz">
                   {{ tz }}
                 </option>
               </select>

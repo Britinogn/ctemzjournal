@@ -26,6 +26,7 @@ export interface ProfileUpdate {
 /** POST /auth/sync body (fallback profile bootstrap on first login). */
 export interface SyncRequest {
   display_name?: string;
+  timezone?: string;
 }
 
 export interface LoginInput {
@@ -37,6 +38,7 @@ export interface SignupInput {
   email: string;
   password: string;
   display_name?: string;
+  timezone?: string;
 }
 
 export interface ResetRequestInput {

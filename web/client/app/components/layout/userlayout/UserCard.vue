@@ -36,6 +36,8 @@ async function onLogout(): Promise<void> {
       <LayoutUserlayoutUserAvatar
         :name="profile?.DisplayName"
         :email="undefined"
+        :src="profile?.AvatarPath"
+        :rev="profile?.UpdatedAt"
         :size="40"
         class="shrink-0"
       />

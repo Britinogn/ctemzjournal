@@ -5,6 +5,8 @@ import { fmtSigned } from '~/utils/format'
 
 const props = defineProps<{ days: CalendarDay[] }>()
 
+const { timezone } = useUserTimezone()
+
 const weekdays = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
 /** Months present in the data, newest first (YYYY-MM). */
@@ -124,7 +126,7 @@ function textTone(pnl: number): string {
       </div>
     </div>
     <p class="mt-3 text-[11px] leading-relaxed text-muted">
-      Days are grouped in Lagos time. Each cell shows the day's result with a sign.
+      Days are grouped in {{ timezone }} time. Each cell shows the day's result with a sign.
     </p>
   </div>
 </template>

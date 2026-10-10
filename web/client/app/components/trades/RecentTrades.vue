@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { Alert02Icon, ArrowDown01Icon, ArrowUp01Icon, EyeIcon, Tick02Icon } from '~/utils/icons'
 import type { Trade } from '~/types'
-import { fmtDay, fmtMoney, fmtR } from '~/utils/format'
+import { fmtDayIn, fmtMoney, fmtR } from '~/utils/format'
 
 defineProps<{
   trades: Trade[];
   /** Setup ID → name map (dashboard resolves via /setups). */
   setupNames?: Record<string, string>;
 }>()
+
+const { timezone } = useUserTimezone()
 
 function setupLabel(t: Trade, names?: Record<string, string>): string {
   const name = (t.SetupID && names?.[t.SetupID]) || null
@@ -75,7 +77,7 @@ function resultOf(t: Trade): { label: string; cls: string } | null {
             </span>
             <span v-else class="text-xs text-muted">—</span>
           </td>
-          <td class="py-2.5 pr-3 text-muted">{{ t.ClosedAt ? fmtDay(t.ClosedAt) : 'Open' }}</td>
+          <td class="py-2.5 pr-3 text-muted">{{ t.ClosedAt ? fmtDayIn(t.ClosedAt, timezone) : 'Open' }}</td>
           <td class="tnum py-2.5 pr-3 text-right font-semibold" :class="t.Pnl !== null && t.Pnl < 0 ? 'text-loss' : 'text-profit-text'">
             {{ t.Pnl === null ? '—' : fmtMoney(t.Pnl) }}
           </td>
@@ -122,7 +124,7 @@ function resultOf(t: Trade): { label: string; cls: string } | null {
         <div class="mt-1.5 flex items-center justify-between text-xs text-muted">
           <span class="inline-flex items-center gap-1" :class="sideTone(t.Direction)">
             <UiAppIcon :icon="t.Direction === 'long' ? ArrowUp01Icon : ArrowDown01Icon" :size="12" />
-            {{ t.Direction === 'long' ? 'Long' : 'Short' }} · {{ t.ClosedAt ? fmtDay(t.ClosedAt) : 'Open' }}
+            {{ t.Direction === 'long' ? 'Long' : 'Short' }} · {{ t.ClosedAt ? fmtDayIn(t.ClosedAt, timezone) : 'Open' }}
           </span>
           <span v-if="resultOf(t)" class="font-semibold" :class="resultOf(t)!.cls.split(' ')[1]">
             {{ resultOf(t)!.label }}

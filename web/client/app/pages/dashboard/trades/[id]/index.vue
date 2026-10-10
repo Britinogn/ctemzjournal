@@ -2,7 +2,7 @@
 import { useQuery, useQueryClient } from '@tanstack/vue-query'
 import { toast } from 'vue-sonner'
 import type { Trade, TradeImageWithUrl } from '~/types'
-import { fmtDay, fmtMoney, fmtR } from '~/utils/format'
+import { fmtDateTimeIn, fmtDayIn, fmtMoney, fmtR } from '~/utils/format'
 import {
   ArrowLeft01Icon,
   Edit02Icon,
@@ -30,6 +30,7 @@ const { data: images } = useQuery({
 
 const { data: accounts } = useAccounts()
 const { data: setups } = useSetups()
+const { timezone } = useUserTimezone()
 
 const account = computed(() =>
   accounts.value?.find(a => a.ID === trade.value?.AccountID),
@@ -200,7 +201,7 @@ const skel = 'animate-pulse rounded-2xl border border-border bg-surface'
           {{ setupName }}
           <template v-if="trade.Timeframe"> · {{ trade.Timeframe }}</template>
           · {{ account?.Name ?? 'Account' }}
-          · {{ trade.ClosedAt ? fmtDay(trade.ClosedAt) : 'Open' }}
+          · {{ trade.ClosedAt ? fmtDayIn(trade.ClosedAt, timezone) : 'Open' }}
         </p>
 
         <!-- The result: signed amount with an arrow, then the R as a win or loss chip -->
@@ -298,7 +299,7 @@ const skel = 'animate-pulse rounded-2xl border border-border bg-surface'
                 Opened
               </dt>
               <dd class="tnum mt-0.5 text-sm font-medium">
-                {{ trade.OpenedAt ? fmtDay(trade.OpenedAt) : '—' }}
+                {{ trade.OpenedAt ? fmtDateTimeIn(trade.OpenedAt, timezone) : '—' }}
               </dd>
             </div>
           </dl>
