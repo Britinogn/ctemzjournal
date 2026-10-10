@@ -54,9 +54,9 @@ func main() {
 		deps.Queries = database.Queries
 	}
 
-	// Live prices: background goroutine fetches ~8 pairs on a timer into an
+	// Live prices: background goroutine fetches pairs on a timer into an
 	// in-memory cache (browsers never call the provider). Refresh every
-	// RATES_REFRESH_MINUTES (20 min default = ~576 Twelve Data req/day).
+	// RATES_REFRESH_MINUTES (45 min default = ~576 Twelve Data req/day).
 	ratesSvc := rates.NewService(
 		rates.TwelveData{APIKey: cfg.TwelveDataAPIKey},
 		rates.Frankfurter{},

@@ -56,7 +56,7 @@ func Load() *Config {
 		CloudinaryAPISecret: getEnv("CLOUDINARY_API_SECRET", ""),
 
 		TwelveDataAPIKey:    getEnv("TWELVE_DATA_API_KEY", ""),
-		RatesRefreshMinutes: getEnvInt("RATES_REFRESH_MINUTES", 20),
+		RatesRefreshMinutes: getEnvInt("RATES_REFRESH_MINUTES", 45),
 
 		BcryptRounds: getEnvInt("BCRYPT_ROUNDS", 12),
 
